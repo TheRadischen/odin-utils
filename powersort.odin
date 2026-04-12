@@ -6,6 +6,8 @@ import "base:intrinsics"
 // by J. Ian Munro and Sebastian Wild
 // https://arxiv.org/pdf/1805.04154
 
+// stable sort
+
 MIN_RUN_LEN :: 32
 
 extend_run_right :: proc(arr: $A/[]$T, left, right: int) -> int {
