@@ -6,9 +6,67 @@ import "base:intrinsics"
 // by J. Ian Munro and Sebastian Wild
 // https://arxiv.org/pdf/1805.04154
 
-// stable sort
 
 MIN_RUN_LEN :: 32
+
+// stable sort
+powersort :: proc(arr: $A/[]$T) {
+    n := len(arr)
+    n2 := n << 1
+    right := n - 1
+    lgn_plus2 := size_of(int) * 8 - intrinsics.count_leading_zeros(n) - 1 + 2
+
+    left_run_start := make([]int, lgn_plus2)
+    left_run_end   := make([]int, lgn_plus2)
+    defer delete(left_run_start)
+    defer delete(left_run_end)
+
+    for i in 0..<lgn_plus2 {
+        left_run_start[i] = -1
+    }
+
+    top := 0
+    buffer := make([]T, n >> 1)
+    defer delete(buffer)
+
+    start_a := 0
+    end_a   := extend_run_right(arr, start_a, right)
+    len_a   := end_a - start_a + 1
+    if len_a < MIN_RUN_LEN {
+        end_a = min(right, start_a + MIN_RUN_LEN - 1)
+        insertion_sort(arr[start_a:end_a+1],len_a)
+    }
+
+    for end_a < right {
+        start_b := end_a + 1
+        end_b   := extend_run_right(arr, start_b, right)
+        len_b   := end_b - start_b + 1
+        if len_b < MIN_RUN_LEN {
+            end_b = min(right, start_b + MIN_RUN_LEN - 1)
+        insertion_sort(arr[start_b:end_b+1],len_b)
+        }
+
+        k := node_power(n2, start_a, start_b, end_b)
+
+        for l := top; l > k; l -= 1 {
+            if left_run_start[l] == -1 do continue
+            merge_runs(arr, left_run_start[l], left_run_end[l], end_a, buffer)
+            start_a = left_run_start[l]
+            left_run_start[l] = -1
+        }
+
+        left_run_start[k] = start_a
+        left_run_end[k]   = end_a
+        top     = k
+        start_a = start_b
+        end_a   = end_b
+    }
+
+    for l := top; l > 0; l -= 1 {
+        if left_run_start[l] == -1 do continue
+        merge_runs(arr, left_run_start[l], left_run_end[l], right, buffer)
+    }
+}
 
 extend_run_right :: proc(arr: $A/[]$T, left, right: int) -> int {
     if left == right do return left
@@ -60,8 +118,6 @@ merge_runs :: proc(arr: $A/[]$T, l, m, r: int, aux: []T) {
     }
 }
 merge_low :: proc(arr: $A/[]$T, l, m, r: int, aux: []T) {
-
-
     for i := 0; i <= m-l; i += 1 {
         aux[i] = arr[l+i]
     }
@@ -86,8 +142,7 @@ merge_low :: proc(arr: $A/[]$T, l, m, r: int, aux: []T) {
     }
 }
 merge_high :: proc(arr: $A/[]$T, l, m, r: int, aux: []T) {
-
-
+    // slice.copy is exponentially slow on big inputs (10m+)
     for i := 0; i < r-m; i += 1 {
         aux[i] = arr[m+i+1]
     }
@@ -112,7 +167,6 @@ merge_high :: proc(arr: $A/[]$T, l, m, r: int, aux: []T) {
     }
 }
 
-
 node_power :: proc(n2, startA, startB, endB: int) -> int {
     l :int= startA + startB
     r :int= startB + endB + 1
@@ -122,61 +176,3 @@ node_power :: proc(n2, startA, startB, endB: int) -> int {
     return int(res)
 }
 
-powersort :: proc(arr: $A/[]$T) {
-    n := len(arr)
-    n2 := n << 1
-    right := n - 1
-    lgn_plus2 := size_of(int) * 8 - intrinsics.count_leading_zeros(n) - 1 + 2
-
-    left_run_start := make([]int, lgn_plus2)
-    left_run_end   := make([]int, lgn_plus2)
-    defer delete(left_run_start)
-    defer delete(left_run_end)
-
-    for i in 0..<lgn_plus2 {
-        left_run_start[i] = -1
-    }
-
-    top := 0
-    buffer := make([]T, n >> 1)
-    defer delete(buffer)
-
-    start_a := 0
-    end_a   := extend_run_right(arr, start_a, right)
-    len_a   := end_a - start_a + 1
-    if len_a < MIN_RUN_LEN {
-        end_a = min(right, start_a + MIN_RUN_LEN - 1)
-        insertion_sort(arr[start_a:end_a+1],len_a)
-    }
-
-    for end_a < right {
-        start_b := end_a + 1
-        end_b   := extend_run_right(arr, start_b, right)
-        len_b   := end_b - start_b + 1
-        if len_b < MIN_RUN_LEN {
-            end_b = min(right, start_b + MIN_RUN_LEN - 1)
-        insertion_sort(arr[start_b:end_b+1],len_b)
-        }
-
-
-        k := node_power(n2, start_a, start_b, end_b)
-
-        for l := top; l > k; l -= 1 {
-            if left_run_start[l] == -1 do continue
-            merge_runs(arr, left_run_start[l], left_run_end[l], end_a, buffer)
-            start_a = left_run_start[l]
-            left_run_start[l] = -1
-        }
-
-        left_run_start[k] = start_a
-        left_run_end[k]   = end_a
-        top     = k
-        start_a = start_b
-        end_a   = end_b
-    }
-
-    for l := top; l > 0; l -= 1 {
-        if left_run_start[l] == -1 do continue
-        merge_runs(arr, left_run_start[l], left_run_end[l], right, buffer)
-    }
-}
