@@ -1,7 +1,7 @@
 # odin-utils
 just some (maybe) usefull code
 
-merge_inplace is a stable in-place sort, about 4x slower than powersort <br>
+merge_inplace is a stable, in-place, comparison sort, about 4x slower than powersort <br>
 powersort is a fast stable sorting algorithm <br>
 quicksort is faster, but unstable
 
