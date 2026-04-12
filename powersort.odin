@@ -5,6 +5,8 @@ import "base:intrinsics"
 // implementation of Nearly-Optimal Mergesorts
 // by J. Ian Munro and Sebastian Wild
 // https://arxiv.org/pdf/1805.04154
+// possible optimizations in pythons implementation, mainly galloping
+// https://github.com/python/cpython/blob/main/Objects/listobject.c#L2945
 
 
 MIN_RUN_LEN :: 32
