@@ -11,7 +11,7 @@ import "base:intrinsics"
 
 MIN_RUN_LEN :: 32
 
-// stable sort, uses 1.5 x n memory
+// stable sort, O(n/2) memory
 powersort :: proc(arr: $A/[]$T) {
     n := len(arr)
     n2 := n << 1
