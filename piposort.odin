@@ -30,7 +30,7 @@ package piposort
 */
 
 
-
+// stable sort, uses O(n) memory
 piposort :: proc(arr: $A/[]$T , cmp: proc(T,T)->bool){
     swap := make_slice([]T, len(arr))
     ping_pong_merge(arr,swap,cmp)
