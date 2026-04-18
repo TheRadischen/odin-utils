@@ -29,6 +29,7 @@ package piposort
 	piposort 1.1.5.4
 */
 
+MIN_ODD_EVEN :: 17 // magic number
 
 // stable sort, uses O(n) memory
 piposort :: proc(arr: $A/[]$T , cmp: proc(T,T)->bool){
@@ -39,7 +40,7 @@ piposort :: proc(arr: $A/[]$T , cmp: proc(T,T)->bool){
 
 ping_pong_merge :: proc(arr, swap: $A/[]$T, cmp: proc(T,T)->bool){
     n := len(arr)
-    if n <= 7 {
+    if n <= MIN_ODD_EVEN {
         branchless_odd_even_sort(arr, cmp)
         return
     }
