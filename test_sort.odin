@@ -135,7 +135,8 @@ test_stability :: proc(){
     is_sorted_data(arrd)
     is_sorted_data(arrd2)
 
-    if !slice.equal(arrd,arrd2) do fmt.println("meh")
+    if !slice.equal(arrd,arrd2) do fmt.println("not stable")
+    else do fmt.println("stable")
 }
 
 
