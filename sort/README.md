@@ -13,17 +13,24 @@ new algorithm: merge rotate sort
 speed benchmark
 
 what we are interested in is the blue and red algos
+
 the change in slice.stable_sort is from insert to rotate_merge
+
 for comparison i added some other algos, that are not prototypes:
 - branchless qsort is the main algo behind pattern defeating quicksort that is a widely used unstable sort
 - ping pong sort is an out of place O(n) memory, stable merge sort almost on par with pdqsort, but much simpler
 - lastly is slice.sort, odins smoothsort implementation, that does well on almost sorted arrays, but is up to 10x slower on random data
 
 to interpret the diagrams
+
 on the left is input size
+
 on the bottom is log(time / n*log(n))
+
 exponential insertion sort becomes linear
+
 nlogn sorts become vertical
+
 nlog²n merge_rotate has a small uptick (not much, my benchmarks arent that precice...)
 
 <img width="605" height="341" alt="int70" src="https://github.com/user-attachments/assets/aaf48d20-abe2-442e-a523-19df4b73f81d" />
