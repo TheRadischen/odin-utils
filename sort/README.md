@@ -1,12 +1,12 @@
 reasons for updating slice._stable_sort_general:
 
 old algorithm: insertion sort
-time: O(n²)
-space: O(1)
+- time: O(n²)
+- space: O(1)
 
 new algorithm: merge rotate sort
-time: O(nlog(n)²)
-space: O(logn) stack, because of recursion
+- time: O(nlog(n)²)
+- space: O(logn) stack, because of recursion
 
 
 benchmark for 
