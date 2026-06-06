@@ -6,7 +6,7 @@ old algorithm: insertion sort
 
 new algorithm: merge rotate sort
 - time: O(nlog(n)²)
-- space: O(logn) stack, because of recursion (24 depth at 1_000_000, 14 at 1000), but we only allocate a few variables
+- space: O(logn) stack, because of recursion (24 depth at 1_000_000, 14 at 1000) (twice in worst case), but we only allocate a few variables
 - used in c++ stdlib:
 - and go (go uses tail call optimization, so no stack)
 
