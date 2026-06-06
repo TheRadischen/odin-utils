@@ -26,6 +26,7 @@ to interpret the diagrams
 on the bottom is input size
 
 on the left is log(time / n*log(n)) the log of the time per sorted element logged
+normally benchmarks have time / n*log(n) without the extra log in the beginning, but insertion sorts exponential nature makes that necessary
 
 exponential insertion sort becomes linear
 
