@@ -37,6 +37,8 @@ pc: i have a laptop, so dont expect much: ASUS Vivobook with windows 11
 
 cpu: AMD Ryzen 7 4700U with Radeon Graphics (2.00 GHz)
 
+for small arrays < 1000 item insertion sort is directly called, as rotate_merge has a big constant factor, the diagrams dont show this as i added that after discovering that small arrays are kinda slow
+
 <img width="605" height="341" alt="int70" src="https://github.com/user-attachments/assets/aaf48d20-abe2-442e-a523-19df4b73f81d" />
 <img width="605" height="341" alt="int 10" src="https://github.com/user-attachments/assets/78e6b366-742f-4723-9f57-ab9365b51717" />
 <img width="605" height="341" alt="int 1" src="https://github.com/user-attachments/assets/51455fb9-8a96-462d-b987-37127fc0ca35" />
