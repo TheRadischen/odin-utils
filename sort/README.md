@@ -59,7 +59,7 @@ java:
 - a bit outdated, but fast enough. timsort is not inplace
 
 zig:
-- wikisort for stable, i kinda laughed when i saw that. block merge sorts are cool algos, but not practical, they have a constant factor of 10x merge_rotate sort. and their nlogn nature only makes them better at 10m items or so
+- wikisort for stable, i kinda laughed when i saw that. block merge sorts are cool algos, but not practical, they have a constant factor of 10x merge_rotate sort. and their nlogn nature only makes them better at 10m items or so. rust looked into implementing grailsort, but got scared, because the algo is too difficult to implement
 - pdqsort for unstable
 
 
