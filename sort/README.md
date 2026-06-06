@@ -33,7 +33,8 @@ nlogn sorts become vertical
 
 nlog²n merge_rotate has a small uptick (not much, my benchmarks arent that accurate...)
 
-pc: i have a laptop, xo dont expect much
+pc: i have a laptop, so dont expect much: ASUS Vivobook with windows 11 
+
 cpu: AMD Ryzen 7 4700U with Radeon Graphics (2.00 GHz)
 
 <img width="605" height="341" alt="int70" src="https://github.com/user-attachments/assets/aaf48d20-abe2-442e-a523-19df4b73f81d" />
@@ -47,7 +48,7 @@ further reading on sorts:
 
 main tradeoff modern sorts need to make is binary size / complexity to implement / speed / extra memory usage
 
-requiremnt: adaptability, no worst case, speed
+requirements: adaptability, no worst case, speed
   
 rust: had recent changes to both its stable and unstable sorts
 - https://github.com/Voultapher/sort-research-rs/blob/main/writeup/driftsort_introduction/text.md
