@@ -13,7 +13,7 @@ Data :: struct {
 }
 
 main :: proc(){
-    // test_stability()
+    test_stability()
     test_speed()
 }
 Sort_Kind :: enum {
