@@ -11,7 +11,7 @@ just some (maybe) usefull code
 piposort is a stable, outof-place, branchless comparison sort, faster than quicksort uses O(n) memory
 
 powersort is a fast stable sorting algorithm used by cphyton <br>
-quicksort is but unstable
+quicksort is faster but unstable
 
 
 sparse set is usefull to keep track of entities by id even when deleting/inserting <br>
