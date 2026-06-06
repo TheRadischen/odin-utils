@@ -16,7 +16,7 @@ what we are interested in is the blue and red algos
 
 the change in slice.stable_sort is from insert to rotate_merge
 
-for comparison i added some other algos, that are not prototypes:
+for comparison i added some other algos, that are prototypes:
 - branchless qsort is the main algo behind pattern defeating quicksort that is a widely used unstable sort
 - ping pong sort is an out of place O(n) memory, stable merge sort almost on par with pdqsort, but much simpler
 - lastly is slice.sort, odins smoothsort implementation, that does well on almost sorted arrays, but is up to 10x slower on random data
