@@ -60,12 +60,14 @@ java:
 
 zig:
 - wikisort for stable, i kinda laughed when i saw that. block merge sorts are cool algos, but not practical, they have a constant factor of 10x merge_rotate sort. and their nlogn nature only makes them better at 10m items or so. rust looked into implementing grailsort, but got scared, because the algo is too difficult to implement
-- pdqsort for unstable
+- pdqsort for unstable, pretty standard
 
 
 my question for odin is what are the requirements?
 
-- binary size is an issue when para poly makes it easy to have multiple sorts in the same programm, so standart sort needs to be reasonably small, but in core:sort i could add a bigger sort, that could be used when sorting many items and performance is a priority. rust had big algos before the recent changes, altho the current ones arent exactly small
-- extra memory: unstable sorts only need a bit of stack space (512 should be more than enough). but stable algos benefit a lot from extra memory. as in the case of ping pong sort o(n) is needed, slice.stable_sort could have a check to see if the memory was succesfully allocated and switch to inplace if no memory was allocated
+- binary size is an issue when para poly makes it easy to have multiple sorts in the same programm, so standart sort needs to be reasonably small, but in core:sort i could add a bigger sort, that could be used when sorting many items and performance is a priority. rust had big algos before the recent changes, altho the current ones still arent small
+- extra memory: unstable sorts only need a bit of stack space (512 is more than enough). but stable algos benefit a lot from extra memory. as in the case of ping pong sort o(n) is needed, slice.stable_sort could have a check to see if the memory was succesfully allocated and switch to inplace if no memory was allocated, or again just add them to core:sort
+
+as it is odin doesnt have fast modern algos for sorting
 
 
