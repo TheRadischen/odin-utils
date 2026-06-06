@@ -42,6 +42,8 @@ for small arrays < 1000 item insertion sort is directly called, as rotate_merge 
 
 in the data sheet some big inputs arent done with insertion sort as they take too long, the diagrams show an extrapolated graph for 1_000_000 items
 
+benchmarks compiled with -o:speed
+
 <img width="605" height="341" alt="int70" src="https://github.com/user-attachments/assets/aaf48d20-abe2-442e-a523-19df4b73f81d" />
 <img width="605" height="341" alt="int 10" src="https://github.com/user-attachments/assets/78e6b366-742f-4723-9f57-ab9365b51717" />
 <img width="605" height="341" alt="int 1" src="https://github.com/user-attachments/assets/51455fb9-8a96-462d-b987-37127fc0ca35" />
