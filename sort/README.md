@@ -23,18 +23,48 @@ for comparison i added some other algos, that are prototypes:
 
 to interpret the diagrams
 
-on the left is input size
+on the bottom is input size
 
-on the bottom is log(time / n*log(n))
+on the left is log(time / n*log(n)) the log of the time per sorted element logged
 
 exponential insertion sort becomes linear
 
 nlogn sorts become vertical
 
-nlog²n merge_rotate has a small uptick (not much, my benchmarks arent that precice...)
+nlog²n merge_rotate has a small uptick (not much, my benchmarks arent that accurate...)
+
+pc: i have a laptop, xo dont expect much
+cpu: AMD Ryzen 7 4700U with Radeon Graphics (2.00 GHz)
 
 <img width="605" height="341" alt="int70" src="https://github.com/user-attachments/assets/aaf48d20-abe2-442e-a523-19df4b73f81d" />
 <img width="605" height="341" alt="int 10" src="https://github.com/user-attachments/assets/78e6b366-742f-4723-9f57-ab9365b51717" />
 <img width="605" height="341" alt="int 1" src="https://github.com/user-attachments/assets/51455fb9-8a96-462d-b987-37127fc0ca35" />
 <img width="605" height="341" alt="f32 10" src="https://github.com/user-attachments/assets/ac043684-fbab-4c22-93e9-73d51f91ea11" />
 <img width="605" height="341" alt="desending" src="https://github.com/user-attachments/assets/45ddf631-901a-4f27-a696-9cab1b8d1440" />
+
+
+further reading on sorts:
+
+main tradeoff modern sorts need to make is binary size / complexity to implement / speed / extra memory usage
+
+requiremnt: adaptability, no worst case, speed
+  
+rust: had recent changes to both its stable and unstable sorts
+- https://github.com/Voultapher/sort-research-rs/blob/main/writeup/driftsort_introduction/text.md
+- https://github.com/Voultapher/sort-research-rs/blob/main/writeup/ipnsort_introduction/text.md
+
+java:
+- timsort for stable sort, dual pivot quicksort for unstable
+- a bit outdated, but fast enough. timsort is not inplace
+
+zig:
+- wikisort for stable, i kinda laughed when i saw that. block merge sorts are cool algos, but not practical, they have a constant factor of 10x merge_rotate sort. and their nlogn nature only makes them better at 10m items or so
+- pdqsort for unstable
+
+
+my question for odin is what are the requirements?
+
+- binary size is an issue when para poly makes it easy to have multiple sorts in the same programm, so standart sort needs to be reasonably small, but in core:sort i could add a bigger sort, that could be used when sorting many items and performance is a priority. rust had big algos before the recent changes, altho the current ones arent exactly small
+- extra memory: unstable sorts only need a bit of stack space (512 should be more than enough). but stable algos benefit a lot from extra memory. as in the case of ping pong sort o(n) is needed, slice.stable_sort could have a check to see if the memory was succesfully allocated and switch to inplace if no memory was allocated
+
+
