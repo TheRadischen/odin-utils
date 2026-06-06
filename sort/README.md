@@ -43,6 +43,7 @@ cpu: AMD Ryzen 7 4700U with Radeon Graphics (2.00 GHz)
 <img width="605" height="341" alt="f32 10" src="https://github.com/user-attachments/assets/ac043684-fbab-4c22-93e9-73d51f91ea11" />
 <img width="605" height="341" alt="desending" src="https://github.com/user-attachments/assets/45ddf631-901a-4f27-a696-9cab1b8d1440" />
 
+data table: https://docs.google.com/spreadsheets/d/1OCvHLQo5C_MKDZ6BmUwvTb4UqK2TAMSjCzBs7AvohpA/edit?usp=sharing
 
 further reading on sorts:
 
@@ -67,6 +68,9 @@ my question for odin is what are the requirements?
 
 - binary size is an issue when para poly makes it easy to have multiple sorts in the same programm, so standart sort needs to be reasonably small, but in core:sort i could add a bigger sort, that could be used when sorting many items and performance is a priority. rust had big algos before the recent changes, altho the current ones still arent small
 - extra memory: unstable sorts only need a bit of stack space (512 is more than enough). but stable algos benefit a lot from extra memory. as in the case of ping pong sort o(n) is needed, slice.stable_sort could have a check to see if the memory was succesfully allocated and switch to inplace if no memory was allocated, or again just add them to core:sort
+
+
+
 
 as it is odin doesnt have fast modern algos for sorting
 
