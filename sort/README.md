@@ -56,7 +56,7 @@ further reading on sorts:
 
 main tradeoff modern sorts need to make is binary size / complexity to implement / speed / extra memory usage
 
-requirements: adaptability, no worst case, speed
+requirements: adaptability, no worst case, speed (ILP, branchless)
   
 rust: had recent changes to both its stable and unstable sorts
 - https://github.com/Voultapher/sort-research-rs/blob/main/writeup/driftsort_introduction/text.md
