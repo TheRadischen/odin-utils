@@ -1,5 +1,7 @@
 package piposort
 
+import "base:intrinsics"
+
 
 /*
 	Copyright (C) 2014-2022 Igor van den Hoven ivdhoven@gmail.com
@@ -33,11 +35,16 @@ package piposort
 MIN_ODD_EVEN :: 7
 
 piposort :: proc(arr: $A , cmp: proc($T,T)->bool){
-    swap := make_slice([]T, len(arr))
-    ping_pong_merge(arr,swap,cmp)
+    when intrinsics.type_is_slice(type_of(arr)) {
+        swap := make([]T,len(arr))
+    } else {
+        swap := make(#soa[]T,len(arr))
+    }
+    ping_pong_swap(arr,swap,cmp)
     delete(swap)
 }
 insertion_sort_cmp :: proc(arr: $A, cmp: proc($T, T) -> bool) {
+    arr:= arr
     for i in 1..<len(arr) {
         x := arr[i]
         j := i
@@ -47,7 +54,8 @@ insertion_sort_cmp :: proc(arr: $A, cmp: proc($T, T) -> bool) {
         arr[j] = x
     }
 }
-ping_pong_merge :: proc(arr, swap: $A, cmp: proc($T,T)->bool){
+ping_pong_swap :: proc(arr, swap: $A, cmp: proc($T,T)->bool){
+    arr:= arr
     n := len(arr)
     if n <= MIN_ODD_EVEN {
         insertion_sort_cmp(arr,cmp)
@@ -61,10 +69,10 @@ ping_pong_merge :: proc(arr, swap: $A, cmp: proc($T,T)->bool){
     quad3 := half2 >> 1
     quad4 := half2 - quad3
 
-    ping_pong_merge(arr[:quad1],swap,cmp)
-    ping_pong_merge(arr[quad1:][:quad2],swap,cmp)
-    ping_pong_merge(arr[half1:][:quad3],swap,cmp)
-    ping_pong_merge(arr[half1 + quad3:],swap,cmp)
+    ping_pong_swap(arr[:quad1],swap,cmp)
+    ping_pong_swap(arr[quad1:][:quad2],swap,cmp)
+    ping_pong_swap(arr[half1:][:quad3],swap,cmp)
+    ping_pong_swap(arr[half1 + quad3:],swap,cmp)
 
     if !cmp(arr[quad1 - 1],arr[quad1]) &&
        !cmp(arr[half1 - 1], arr[half1]) &&
@@ -87,7 +95,6 @@ ping_pong_merge :: proc(arr, swap: $A, cmp: proc($T,T)->bool){
 
 }
 oddeven_parity_merge :: proc(from, dest: $A, left, right: int, greater: proc($T,T)-> bool){
-
     dest := dest; from := from
     
     ptl := 0
@@ -122,7 +129,19 @@ nn :: #force_inline proc(arr: $A, pointer: ^int, $T: typeid) -> T #no_bounds_che
 
 
 aux_rotation :: proc(arr,swap: $A,left, right: int){
-    copy(swap,arr[:left])
-    copy(arr,arr[left:][:right])
-    copy(arr[right:],swap[:left])
+    pip_copy(swap,arr[:left])
+    pip_copy(arr,arr[left:][:right])
+    pip_copy(arr[right:],swap[:left])
+}
+
+pip_copy :: proc(arr, swap: $A){
+    when intrinsics.type_is_slice(A) {
+        copy(arr, swap)
+    } else {
+        arr := arr; swap := swap
+        length := min(len(arr),len(swap))
+        for i in 0..<length {
+            arr[i] = swap[i]
+        }
+    }
 }
