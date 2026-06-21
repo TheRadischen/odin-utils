@@ -1,6 +1,5 @@
 package piposort
 
-import "core:slice"
 /*
 	Copyright (C) 2014-2022 Igor van den Hoven ivdhoven@gmail.com
 */
