@@ -1,5 +1,6 @@
 package piposort
 
+
 /*
 	Copyright (C) 2014-2022 Igor van den Hoven ivdhoven@gmail.com
 */
@@ -31,12 +32,12 @@ package piposort
 
 MIN_ODD_EVEN :: 7
 
-piposort :: proc(arr: $A/[]$T , cmp: proc(T,T)->bool){
+piposort :: proc(arr: $A , cmp: proc($T,T)->bool){
     swap := make_slice([]T, len(arr))
     ping_pong_merge(arr,swap,cmp)
     delete(swap)
 }
-insertion_sort_cmp :: proc(arr: $A/[]$T, cmp: proc(T, T) -> bool) {
+insertion_sort_cmp :: proc(arr: $A, cmp: proc($T, T) -> bool) {
     for i in 1..<len(arr) {
         x := arr[i]
         j := i
@@ -46,7 +47,7 @@ insertion_sort_cmp :: proc(arr: $A/[]$T, cmp: proc(T, T) -> bool) {
         arr[j] = x
     }
 }
-ping_pong_merge :: proc(arr, swap: $A/[]$T, cmp: proc(T,T)->bool){
+ping_pong_merge :: proc(arr, swap: $A, cmp: proc($T,T)->bool){
     n := len(arr)
     if n <= MIN_ODD_EVEN {
         insertion_sort_cmp(arr,cmp)
@@ -120,7 +121,7 @@ nn :: #force_inline proc(arr: $A, pointer: ^int, $T: typeid) -> T #no_bounds_che
 }
 
 
-aux_rotation :: proc(arr,swap: $A/[]$T,left, right: int){
+aux_rotation :: proc(arr,swap: $A,left, right: int){
     copy(swap,arr[:left])
     copy(arr,arr[left:][:right])
     copy(arr[right:],swap[:left])
