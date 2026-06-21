@@ -8,7 +8,7 @@ just some (maybe) usefull code
 | quickinsert   | O(log n) (recursion calls)  | no      | no | best for random data, still slower than piposort |
 | block_quicksort | O(log n) (recursion calls)  | no      | no | best for random data, branchless optimization. main loop of pdqsort |
 
-WIP: piposort is a stable, outof-place, branchless comparison sort, faster than quicksort uses O(n) memory
+piposort is a stable, outof-place, branchless comparison sort, faster than quicksort uses O(n) memory
 
 powersort is a fast stable sorting algorithm used by cphyton <br>
 quicksort is faster but unstable
