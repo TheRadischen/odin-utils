@@ -34,6 +34,7 @@ import "base:intrinsics"
 
 MIN_ODD_EVEN :: 7
 
+// provide a cmp like proc(l, r:int) -> {return l > r}  left > right for descending order. like c
 piposort :: proc(arr: $A , cmp: proc($T,T)->bool){
     when intrinsics.type_is_slice(type_of(arr)) {
         swap := make([]T,len(arr))
