@@ -11,6 +11,10 @@ Pros
 ---
 fast stable adaptive sorting with only 512 stack space // can be changed in blitsort.odin
 
+on average 5x faster than slice.sort() for small types
+
+can sort #soa
+
 Cons
 ---
 big binary size (havent measured yet), be carefull not to create too many inscances with parapoly
