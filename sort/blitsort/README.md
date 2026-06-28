@@ -84,8 +84,9 @@ performance degrades with big structs
 
 
 
+slice.sort() becomes slow when you leave L! cache and terribly degrades once you leave L3 cache
 
-
+<img width="1082" height="752" alt="image" src="https://github.com/user-attachments/assets/1f7e7788-cdef-4621-901b-58194742fbd7" />
 
 
 
