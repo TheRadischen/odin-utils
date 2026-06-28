@@ -9,7 +9,7 @@ the odin port is written generic, that means you can sort any slice or #soa
 
 Pros
 ---
-fast stable adaptive sorting with only 512 stack space
+fast stable adaptive sorting with only 512 stack space // can be changed in blitsort.odin
 
 Cons
 ---
