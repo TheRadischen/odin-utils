@@ -1,0 +1,188 @@
+#+feature dynamic-literals
+
+package blit
+
+import "core:math/linalg"
+import "core:strings"
+import "core:sort"
+import "core:slice"
+import rl "vendor:raylib"
+import "base:intrinsics"
+import "core:testing"
+
+import "core:time"
+import "core:fmt"
+
+
+MAX_SIZE :: 10_000_000
+sizes := []int {10,100,1_000,10_000,100_000,1_000_000}
+input_types :[]proc(int)->[]Data= {random_head_25 , random_head_25,ascending_saw,desendin_saw,rand_half,rand_Data_10,rand_Data};
+
+DRAW : bool
+
+custom_print :: proc(args: ..any){
+    if true do return
+    fmt.println(args)
+}
+main :: proc(){
+
+
+    test_stable()
+
+    // diff_data = 
+    test_speed()
+
+    // test_visual()
+
+}
+test_visual :: proc() {
+    for i :f64= 5; i <= 1_000_000; i *= 1.9 {
+        visual_test(int(i)-0)
+    }
+
+    draw()
+
+}
+
+arr : []int
+// swap : [BLIT_AUX]int
+diff : []int
+changed : []f32
+
+arr_data : []Data
+// swap_data : [BLIT_AUX]Data
+diff_data : []Data
+
+test_stable :: proc() {
+    for i in 0..<600 {
+        for _ in 0..<10 {
+            arr := rand_Data(i)
+            copy := data_to_int(arr)
+            defer delete(arr)
+            blitsort(arr, greater_data)
+            if !is_sorted_data(arr) {
+                fmt.println(copy)
+                panic("not sorted")
+            }
+        }
+    }
+
+    for s in sizes {
+        for t in input_types {
+            arr_data = t(s)
+            defer delete(arr_data)
+
+            sum := sum_data(arr_data)
+            blitsort(arr_data, greater_data)
+            assert(sum == sum_data(arr_data))
+            assert(is_sorted_data(arr_data))
+        }
+    }
+    fmt.println("sort is stable")
+}
+
+test_speed :: proc(){
+    
+}
+
+
+rand :: proc(start: u64) -> u64{
+	start := start
+	start ~= start << 13
+	start ~= start >> 7
+	start ~= start << 17
+	return start
+}
+
+
+init :: proc(){
+    diff = make([]int, MAX_SIZE)
+        // swap = make([]int, MAX_SIZE)
+    arr = make([]int, MAX_SIZE)
+    changed = make([]f32, MAX_SIZE)
+
+    rl.SetConfigFlags({.WINDOW_RESIZABLE, .VSYNC_HINT})
+    rl.InitWindow(GAME_SCREEN_WIDTH,GAME_SCREEN_HEIGHT,"sort")
+	// defer rl.CloseWindow()
+    rl.SetTargetFPS(60)
+
+}
+visual :: proc(arr: $A){
+    init()
+    swap = make([]int,32)
+    counter = 0
+
+    diff = make([]int, len(arr))
+    changed = make([]f32, len(arr))
+    copy(diff,arr)
+    quadsort_swap(arr,swap,greater)
+}
+
+
+
+GAME_SCREEN_WIDTH :: 1080
+GAME_SCREEN_HEIGHT :: 720
+draw :: proc(){
+        rl.BeginDrawing()
+
+            rl.ClearBackground(rl.BLACK)
+            n := len(arr)
+            max_val := arr[len(arr)-1]
+            for i in 0..<n {
+                if arr[i] == diff[i] {
+                    changed[i] = max(changed[i] - 5, -360)
+                }  else {
+                    diff[i] = arr[i]
+                    changed[i] = 0
+                }
+                color := rl.ColorFromHSV(changed[i],1,1)
+                rl.DrawRectangle(cast(i32)((i * (GAME_SCREEN_WIDTH-20))/n) + 10, (GAME_SCREEN_HEIGHT-20)-cast(i32)(arr[i] * (GAME_SCREEN_HEIGHT-20) / max_val) + 10, 5,5, color)
+            }
+
+            // swap draw
+            // if true {
+            //     for i in 0..<min(size,len(swap)) {
+            //         rl.DrawRectangle(cast(i32)((i * (GAME_SCREEN_WIDTH-20)) / n) + 10, (GAME_SCREEN_HEIGHT-20)-cast(i32)(swap[i] * (GAME_SCREEN_HEIGHT-20) / n) + 0, 3,3,rl.GREEN)
+            //     }
+            // }
+
+
+            rl.DrawText(strings.clone_to_cstring(fmt.aprint("comparisons: ",counter)),100,10,20,rl.WHITE)
+            rl.DrawText(strings.clone_to_cstring(fmt.aprint("num elements: ",n))     ,100,30,20,rl.WHITE)
+            
+
+        rl.EndDrawing()
+
+        if rl.WindowShouldClose() do rl.CloseWindow()
+}
+
+
+counter := 0
+greater :: proc(l, r: int) -> bool {
+    counter += 1
+    return l > r
+}
+greater_draw :: proc(l, r: int) -> bool {
+    counter += 1
+    if counter % 1000 == 0 do  draw()
+    return l > r
+}
+
+greater_data :: proc(l, r: Data) -> bool {
+    counter += 1
+    return l.rand > r.rand
+}
+
+greater_data_draw :: proc(l, r: Data) -> bool {
+    counter += 1
+    if counter % 1000 == 0 do  draw()
+    return l.rand > r.rand
+}
+
+nlogn :: proc(n, t: int) -> f64 {
+    t := f64(t)
+    n := f64(n)
+    t /= linalg.log2(n) * n
+    
+    return t
+}
