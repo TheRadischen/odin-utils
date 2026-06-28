@@ -7,6 +7,8 @@ Port into Odin
 ---
 the odin port is written generic, that means you can sort any slice or #soa
 
+uses the c convention of sorting ascending when l > r // TODO change this later, since odin uses l < r
+
 Pros
 ---
 fast stable adaptive sorting with only 512 stack space // can be changed in blitsort.odin
