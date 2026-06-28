@@ -14,19 +14,28 @@ fast stable adaptive sorting with only 512 stack space // can be changed in blit
 Cons
 ---
 big binary size (havent measured yet), be carefull not to create too many inscances with parapoly
+
 performance degrades a bit when the type to be sorted becomes too big, roughly equal to slice.sort()
+
 havent implemented sorting with indexes yet. prefer to slice.sort_with_index()
 
 
 Benchmark
 ---
 benchmarks are done with []int
+
 at the top is len(slice)
+
 at the right side you can see the time in ns / nlogn
+
 compared are:
+
 blitsort
+
 quadsort
+
 slice.sort() // smoothsort
+
 compiled with -o:speed -no-bounds-check
 
 rand_int
