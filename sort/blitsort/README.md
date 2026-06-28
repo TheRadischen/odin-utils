@@ -21,7 +21,7 @@ big binary size (havent measured yet), be carefull not to create too many inscan
 
 performance degrades a bit when the type to be sorted becomes too big, roughly equal to slice.sort()
 
-havent implemented sorting with indexes yet. prefer to [slice.sort_with_indices()](https://github.com/odin-lang/Odin/blob/master/core/slice/sort.odin#L103)
+havent implemented sorting with indexes yet. use [slice.sort_with_indices()](https://github.com/odin-lang/Odin/blob/master/core/slice/sort.odin#L103)
 
 
 Benchmark
