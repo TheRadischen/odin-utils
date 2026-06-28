@@ -23,6 +23,13 @@ performance degrades a bit when the type to be sorted becomes too big, roughly e
 
 havent implemented sorting with indexes yet. use [slice.sort_with_indices()](https://github.com/odin-lang/Odin/blob/master/core/slice/sort.odin#L103)
 
+Visualisation
+---
+
+
+https://github.com/user-attachments/assets/eeb0e341-58ce-47c7-bd3b-ed8b38a173e1
+
+
 
 Benchmark
 ---
