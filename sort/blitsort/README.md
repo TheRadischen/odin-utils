@@ -19,7 +19,7 @@ can sort #soa
 
 Cons
 ---
-big binary size (havent measured yet), be carefull not to create too many inscances with parapoly
+big binary size (25 kb on optimized, in most cpus barely in L1 i-cache. 50kb on debug), be carefull not to create too many inscances with parapoly
 
 performance degrades a bit when the type to be sorted becomes too big, roughly equal to slice.sort()
 
