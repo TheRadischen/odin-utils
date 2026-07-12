@@ -12,6 +12,7 @@ Generic_Cmp :: #type proc(lhs, rhs: rawptr, user_data: rawptr) -> Ordering
 
 
 qsort :: proc(data: [^]byte, length, width: uint, cmp: Generic_Cmp, arg:rawptr) {
+// TODO: change to when, but im done testing for now
     if width <= 16 {
         prev_pivot : [16]byte
         quicksort_small(data, length, width, cmp, arg, prev_pivot[:])
