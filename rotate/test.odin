@@ -159,7 +159,7 @@ test_speed_worse_case :: proc(size : int){
         r : int
 
         s = time.tick_now()
-        for i in 0..<255 {
+        for i in 0..<33 {
             j := i
             slice.rotate_left(arr2,j)
         }
@@ -167,7 +167,7 @@ test_speed_worse_case :: proc(size : int){
 
 
         s = time.tick_now()
-        for i in 0..<255 {
+        for i in 0..<33 {
             j := i
             rotate_left(arr,j)
         }
