@@ -10,6 +10,7 @@ main :: proc(){
     for i :f64= 10; i < 10_000_000; i *= 10 {
         test_speed_average_int(int(i))
     }
+    // if true do return
     fmt.println("worse case")
     for i :f64= 10; i < 10_000_000; i *= 10 {
         test_speed_worse_case(int(i))
@@ -86,7 +87,7 @@ test_speed_average_int :: proc(size : int){
     min_slice_rotate := time.MAX_DURATION
     min_updated_rotate := time.MAX_DURATION
 
-    iterations := max(5, 100_000 / max(1,size))
+    iterations := max(5, 1000_000 / max(1,size))
     // iterations = 1
 
     for _ in 0..<iterations    {
@@ -140,7 +141,7 @@ test_speed_worse_case :: proc(size : int){
     min_slice_rotate := time.MAX_DURATION
     min_updated_rotate := time.MAX_DURATION
 
-    iterations := max(5, 100_000 / max(1,size))
+    iterations := max(5, 1_000_000 / max(1,size))
     // iterations = 1
 
     for _ in 0..<iterations    {
