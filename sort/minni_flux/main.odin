@@ -37,6 +37,11 @@ main :: proc() {
     for i :i64= 10; i <= 1_00_000; i *= 10 {
         test_soa(i)
     }
+    fmt.println()
+    fmt.println("soa_stable_sort_by([4]int)")
+    for i :i64= 10; i <= 1_00_000; i *= 10 {
+        test_stablity(i)
+    }
 
 }
 
@@ -200,6 +205,59 @@ test_soa :: proc(size: i64) {
                 panic("not sorted soa")
             }
         }
+
+    }
+
+    sizelg := size
+
+    fmt.println("iter",iter,"size",size," in cycles / item ","mini_flux: ",min1 / sizelg)
+}
+
+
+test_stablity :: proc(size: i64) {
+    Test :: [4]int
+    min1 := max(i64)
+    min2 := max(i64)
+    // iter := 2
+    iter := clamp(1_000_000 / size, 4, 10_000)
+
+    for i in 0..<iter {
+        arr1 := make(#soa[]Test,size)
+        for i in 0..<len(arr1) {
+            arr1[i].x = rand.int_max(int(size % 10 + 1))
+            arr1[i].y = i
+        }
+
+        defer {
+            delete(arr1)
+        }
+
+        start := intrinsics.read_cycle_counter()
+        min_sort.soa_sort_by(arr1, less_soa)
+        // scandum.blitsort(arr1,proc(l,r:[4]int)->bool{return l.x > r.x})
+        end1 := intrinsics.read_cycle_counter() - start
+
+
+        min1 = min(min1, end1)
+
+        sum := arr1[0].y
+        for i in 1..<len(arr1) {
+            sum += arr1[i].y
+            if arr1[i-1].x > arr1[i].x {
+
+                s1,s2,s3,s4 := soa_unzip(arr1)
+                fmt.println(s1)
+                panic("not sorted soa")
+            }
+            if arr1[i-1].x < arr1[i].x {continue}
+            if arr1[i-1].y > arr1[i].y {
+                
+                s1,s2,s3,s4 := soa_unzip(arr1)
+                fmt.println(s1)
+                panic("not sorted stable soa")
+            }
+        }
+        assert(sum == int(size * (size - 1) / 2), "not stable")
 
     }
 
