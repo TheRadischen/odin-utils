@@ -4,6 +4,8 @@ mini_flux is a sort with focus on minimal LOC and readablility
 
 it is a stable, out of place (allocates len(arr)), quicksort
 
+#soa sorting is in a seperate file
+
 Functinality
 ---
 many, not all of core:slice are implemented, including:
@@ -14,6 +16,8 @@ sort_with_indices(arr, less, allocator)
 sort_by_with_indices(arr, less, allocator)
 sort_by_with_data(arr, data, less, allocator)
 sort_by_with_indices_with_data(arr, data, less, allocator)
+
+soa_sort_by(arr: #soa[], less, allocator)
 ```
 allocator are optional, default to context.allocator
 
