@@ -20,6 +20,7 @@ allocator are optional, default to context.allocator
 Benchmarks
 ---
 
+```
 sort(int)
 iter 10000 size 10  in cycles / item  mini_flux:  10 slice.sort:  62 diff:  6.2
 iter 10000 size 100  in cycles / item  mini_flux:  22 slice.sort:  131 diff:  5.990909090909091
