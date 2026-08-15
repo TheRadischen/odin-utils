@@ -12,4 +12,4 @@
 
 radix, piposort and mini_flux are minimal and easy to read
 
-quadsort is hard to wrap your had around
+quadsort is hard to wrap your head around
