@@ -3,7 +3,7 @@ just some (maybe) usefull code
 
 | Sort      | Memory | Stable  | adatability | Speed |
 | ----------- | --- | ----------- | --- | --- |
-| blitsort      | O(512) | yes      | yes | adapts to sorted dataa |
+| blitsort      | O(512) | yes      | yes | adapts to sorted data |
 | quadsort      | O(n) | yes      | yes | adapts to sorted data |
 | piposort      | O(n) | yes      | yes | best for random data |
 | powersort   | O(n/2)  | yes      | yes | best for partially sorted |
