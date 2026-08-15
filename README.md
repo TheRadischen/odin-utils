@@ -1,5 +1,5 @@
 # odin-utils
-just some (maybe) usefull code
+
 
 | Sort      | Memory | Stable  | adatability | Speed |
 | ----------- | --- | ----------- | --- | --- |
@@ -9,3 +9,7 @@ just some (maybe) usefull code
 | piposort      | O(n) | yes      | no | best for random data |
 | mini_flux     | O(n) | yes      | no | best for random data |
 | radix         | O(n) | yes      | no  | fastest for random  |
+
+radix, piposort and mini_flux are minimal and easy to read
+
+quadsort is hard to wrap your had around
