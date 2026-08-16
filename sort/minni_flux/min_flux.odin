@@ -69,7 +69,7 @@ sort_by_with_indices_with_data :: proc(arr: $A/[]$T, data: $D, $CMP: proc(T,T, D
         return CMP(ctx.arr[l], ctx.arr[r], ctx.data)
     }, allocator)
 
-    sort_from_permutation_indices(arr, indices, allocator)
+    sort_from_permutation_indices(arr, indices)
     return indices
 }
 
