@@ -1,8 +1,10 @@
 Overview
 ---
-mini_flux is a sort with focus on minimal LOC and readablility
+min_flux is a sort with focus on minimal LOC and readablility
 
 it is a stable, out of place (allocates len(arr)), quicksort
+
+min_blit is a stable, in place (fixed amount of stack space), quicksort
 
 #soa sorting is in a seperate file
 
