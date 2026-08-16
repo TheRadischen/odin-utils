@@ -1,4 +1,4 @@
-package test
+package msort
 
 import "core:math/rand"
 import "core:slice"
