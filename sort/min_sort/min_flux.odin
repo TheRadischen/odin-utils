@@ -98,7 +98,7 @@ oop_sort :: proc(arr: $A/[]$T, data: $D, $CMP: $P, allocator := context.allocato
 
     swap := make(A, len(arr), allocator)
     oop(arr, swap, arr, data, nil)
-    delete(swap)
+    delete(swap, allocator)
 
     oop :: proc(arr, swap, cur: A, data: D, last_piv: Maybe(T)) #no_bounds_check {
         if len(arr) <= 48 {
