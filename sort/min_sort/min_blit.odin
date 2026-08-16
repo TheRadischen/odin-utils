@@ -87,14 +87,9 @@ ips_sort :: proc(arr: $A/[]$T, data: $D, $CMP: $P, allocator := context.allocato
 
     swap : [BLIT_SWAP]T = ---
     ips(arr, swap[:], data, nil)
-    // delete(swap)
 
     ips :: proc(arr, swap: A, data: D, last_piv: Maybe(T)) #no_bounds_check {
         if len(arr) <= 48 {
-            // if raw_data(arr) != raw_data(cur) {
-            //     copy(arr, cur)
-            // }
-
             insertion_sort(arr, data)
             return
         }
