@@ -19,7 +19,7 @@ soa_oop_sort :: proc(arr: $A/#soa[]$T, data: $D, $CMP: $P, allocator := context.
 
     swap := make(A, len(arr), allocator)
     oop(arr, swap, arr, data, nil)
-    delete(swap)
+    delete(swap, allocator)
 
     oop :: proc(arr, swap, cur: A, data: D, last_piv: Maybe(T)) #no_bounds_check {
         arr := arr; cur := cur; swap := swap
