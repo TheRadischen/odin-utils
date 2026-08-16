@@ -1,6 +1,6 @@
 package msort
 
-import "core:fmt"
+
 import "core:slice"
 import "base:intrinsics"
 
@@ -15,7 +15,7 @@ soa_ipsort_by :: proc(arr: $A/#soa[]$T, $CMP: proc(T,T) -> bool) {
 }
 
 @private
-soa_ips_sort :: proc(arr: $A/#soa[]$T, data: $D, $CMP: $P, allocator := context.allocator) {
+soa_ips_sort :: proc(arr: $A/#soa[]$T, data: $D, $CMP: $P) {
     if len(arr) <= 64 {
         insertion_sort(arr, data)
         return
