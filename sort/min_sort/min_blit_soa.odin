@@ -1,5 +1,6 @@
 package msort
 
+import "core:fmt"
 import "core:slice"
 import "base:intrinsics"
 
@@ -23,7 +24,9 @@ soa_ips_sort :: proc(arr: $A/#soa[]$T, data: $D, $CMP: $P, allocator := context.
     swap : #soa[BLIT_SWAP]T = ---
     ips(arr, swap[:], data, nil)
 
+
     ips :: proc(arr, swap: A, data: D, last_piv: Maybe(T)) #no_bounds_check {
+        
         if len(arr) <= 48 {
             insertion_sort(arr, data)
             return
@@ -59,6 +62,7 @@ soa_ips_sort :: proc(arr: $A/#soa[]$T, data: $D, $CMP: $P, allocator := context.
         if depth == 0 {
             return arr[0]
         }
+        
 
         div := len(arr) / 3
 
@@ -87,6 +91,7 @@ soa_ips_sort :: proc(arr: $A/#soa[]$T, data: $D, $CMP: $P, allocator := context.
     }
 
     partition :: proc(arr, swap: A, data: D, piv: T) -> int #no_bounds_check {
+        
 
         if len(arr) > len(swap) {
             half := len(arr) / 2
@@ -97,7 +102,6 @@ soa_ips_sort :: proc(arr: $A/#soa[]$T, data: $D, $CMP: $P, allocator := context.
 
             return left + right
         }
-
 
         less := 0
 
@@ -114,6 +118,7 @@ soa_ips_sort :: proc(arr: $A/#soa[]$T, data: $D, $CMP: $P, allocator := context.
     }
 
     partition_reverse :: proc(arr, swap: A, data: D, piv: T) -> int #no_bounds_check {
+        
 
         if len(arr) > len(swap) {
             half := len(arr) / 2
@@ -124,7 +129,6 @@ soa_ips_sort :: proc(arr: $A/#soa[]$T, data: $D, $CMP: $P, allocator := context.
 
             return left + right
         }
-
 
         less_equal := 0
 
@@ -144,14 +148,16 @@ soa_ips_sort :: proc(arr: $A/#soa[]$T, data: $D, $CMP: $P, allocator := context.
             dest[i] = src[i]
         }   
     }
+    // needs a better rotate
     rotate :: proc(arr: A, pos: int) {
+        
         reverse(arr[:pos])
         reverse(arr[pos:])
         reverse(arr)
     }
     reverse :: proc(arr: A) {
         last := len(arr) - 1
-        for i in 0..<len(arr) {
+        for i in 0..<len(arr) / 2 {
             arr[i], arr[last - i] = arr[last - i], arr[i]
         }
     }
