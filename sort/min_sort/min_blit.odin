@@ -46,7 +46,7 @@ ipsort_by_with_indices :: proc(arr: $A/[]$T, $CMP: proc(T,T) -> bool, allocator 
 
     ips_sort(indices, arr, proc(l,r: int, data: A) -> bool {
         return CMP(data[l], data[r])
-    }, allocator)
+    })
 
     sort_from_permutation_indices(arr, indices)
     return indices
@@ -59,7 +59,7 @@ ipsort_by_with_data :: proc(arr: $A/[]$T, data: $D, $CMP: proc(T,T, D) -> bool) 
 }
 
 // not actually in place, creates indecies array
-ipsort_by_with_indices_with_data :: proc(arr: $A/[]$T, data: $D, $CMP: proc(T,T, D) -> bool, allocator := context.allocator) -> []int {
+ipsort_by_with_indices_with_data :: proc(arr: $A/[]$T, data: $D, $CMP: proc(T,T, D) -> bool) -> []int {
     indices := make([]int,len(arr),allocator)
     for &index, i in indices{
         index = i
