@@ -10,6 +10,7 @@ import "base:intrinsics"
 
 BLIT_SWAP :: 512
 
+// stable sort
 ipsort :: proc(arr: $A/[]$T) 
     where intrinsics.type_is_ordered(T) {
 

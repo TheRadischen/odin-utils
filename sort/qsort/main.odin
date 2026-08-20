@@ -13,72 +13,72 @@ main :: proc(){
    
     // test_multi_instance()
 
+    for size := 10; size <= 10_000_000; size *= 10 {
+        test_difference_rand(size)
+    }
+
     // for size := 10; size <= 10_000_000; size *= 10 {
-    //     test_difference_rand(size)
+    //     test_difference_asc(size)
     // }
 
-    for size := 10; size <= 10_000_000; size *= 10 {
-        test_difference_asc(size)
-    }
-
 }
 
-test_multi_instance :: proc(){
+// test_multi_instance :: proc(){
     
-    min_t1 := time.MAX_DURATION
-    min_t2 := time.MAX_DURATION
-    min_t3 := time.MAX_DURATION
+//     min_t1 := time.MAX_DURATION
+//     min_t2 := time.MAX_DURATION
+//     min_t3 := time.MAX_DURATION
 
-    for i in 0..<1_00 {
-        arr := make([]int,COMMON_SIZE)
-        for i in 0..<len(arr) {
-            arr[i] = rand.int_max(COMMON_SIZE)
-        }
-        arr3:= make([]f32,COMMON_SIZE)
-        for i in 0..<len(arr) {
-            arr3[i] = rand.float32()
-        }
+//     for i in 0..<1_00 {
+//         arr := make([]int,COMMON_SIZE)
+//         for i in 0..<len(arr) {
+//             arr[i] = rand.int_max(COMMON_SIZE)
+//         }
+//         arr3:= make([]f32,COMMON_SIZE)
+//         for i in 0..<len(arr) {
+//             arr3[i] = rand.float32()
+//         }
 
-        arr2 := slice.clone(arr)
+//         arr2 := slice.clone(arr)
 
-        defer delete(arr)
-        defer delete(arr2)
-        defer delete(arr3)
-
-
-        start := time.tick_now()
-        slice.sort(arr)
-        min_t1 = min(time.tick_since(start), min_t1)
-
-        start = time.tick_now()
-        slice.sort(arr3)
-        min_t2 = min(time.tick_since(start), min_t2)
-
-        start = time.tick_now()
-        // sort(arr2)
-        min_t3 = min(time.tick_since(start), min_t3)
+//         defer delete(arr)
+//         defer delete(arr2)
+//         defer delete(arr3)
 
 
+//         start := time.tick_now()
+//         // slice.sort(arr)
+//         min_t1 = min(time.tick_since(start), min_t1)
+
+//         start = time.tick_now()
+//         // slice.sort(arr3)
+//         min_t2 = min(time.tick_since(start), min_t2)
+
+//         start = time.tick_now()
+//         sort(arr2)
+//         min_t3 = min(time.tick_since(start), min_t3)
 
 
-        // if !slice.is_sorted(arr2) {
-        //     // fmt.println("not sorted2")
-        //     // fmt.println(arr2)
-        //     return
-        // } 
 
-    }
-    fmt.println("sorting with []int and []f32 array slows down runtime, since the comparison funtion is a function pointer")
-    fmt.println("size: ",COMMON_SIZE,"slice.sort int: ",min_t1, "slice.sort f32: ",min_t2,"qsort int : ",min_t3, "diff: ", f64(min_t1) / f64(min_t3))
 
-}
+//         // if !slice.is_sorted(arr2) {
+//         //     // fmt.println("not sorted2")
+//         //     // fmt.println(arr2)
+//         //     return
+//         // } 
+
+//     }
+//     fmt.println("sorting with []int and []f32 array slows down runtime, since the comparison funtion is a function pointer")
+//     fmt.println("size: ",COMMON_SIZE,"slice.sort int: ",min_t1, "slice.sort f32: ",min_t2,"qsort int : ",min_t3, "diff: ", f64(min_t1) / f64(min_t3))
+
+// }
 
 test_difference_rand :: proc(size: int){
     
     min_t1 := time.MAX_DURATION
     min_t2 := time.MAX_DURATION
 
-    iter := clamp(size / 1_000_000,2,100_00)
+    iter := clamp(10_000_000 / size ,2,100_00)
 
     for i in 0..<iter {
         arr := make([]int,size)
@@ -94,7 +94,7 @@ test_difference_rand :: proc(size: int){
 
 
         start := time.tick_now()
-        slice.sort(arr)
+        // slice.sort(arr)
         min_t1 = min(time.tick_since(start), min_t1)
 
         start = time.tick_now()
@@ -114,45 +114,45 @@ test_difference_rand :: proc(size: int){
 }
 
 
-test_difference_asc :: proc(size: int){
+// test_difference_asc :: proc(size: int){
     
-    min_t1 := time.MAX_DURATION
-    min_t2 := time.MAX_DURATION
+//     min_t1 := time.MAX_DURATION
+//     min_t2 := time.MAX_DURATION
 
-    iter := clamp(size / 1_000_000,2,100_00)
+//     iter := clamp(size / 1_000_000,2,100_00)
 
-    for i in 0..<iter {
-        arr := make([]int,size)
-        for i in 0..<len(arr) {
-            arr[i] = i
-        }
+//     for i in 0..<iter {
+//         arr := make([]int,size)
+//         for i in 0..<len(arr) {
+//             arr[i] = i
+//         }
 
-        arr2 := slice.clone(arr)
+//         arr2 := slice.clone(arr)
 
-        defer delete(arr)
-        defer delete(arr2)
-
-
-
-        start := time.tick_now()
-        slice.sort(arr)
-        min_t1 = min(time.tick_since(start), min_t1)
-
-        start = time.tick_now()
-        sort(arr2)
-        min_t2 = min(time.tick_since(start), min_t2)
+//         defer delete(arr)
+//         defer delete(arr2)
 
 
 
-        if !slice.is_sorted(arr2) {
-            panic("not sorted")
-        } 
+//         start := time.tick_now()
+//         slice.sort(arr)
+//         min_t1 = min(time.tick_since(start), min_t1)
 
-    }
+//         start = time.tick_now()
+//         sort(arr2)
+//         min_t2 = min(time.tick_since(start), min_t2)
 
-    fmt.println("size: ",size,"slice.sort int: ",min_t1, "qsort int: ",min_t2, "diff: ", f64(min_t1) / f64(min_t2))
 
-}
+
+//         if !slice.is_sorted(arr2) {
+//             panic("not sorted")
+//         } 
+
+//     }
+
+//     fmt.println("size: ",size,"slice.sort int: ",min_t1, "qsort int: ",min_t2, "diff: ", f64(min_t1) / f64(min_t2))
+
+// }
 
 // test :: proc(size: int){
 
