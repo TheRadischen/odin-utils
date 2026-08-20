@@ -1,16 +1,17 @@
 Overview
 ---
-min_flux is a sort with focus on minimal LOC and readablility
+min_sort is based on readability and minimal LOC
 
-it is a stable, out of place (allocates len(arr)), quicksort
+|  |  allocates | stable | comment |
+| min_lumoto | no | no | fastest |
+| min_flux | yes | yes | ~ 20 % slower |
+| min_blit | no* | yes | worse growth |
+| radix | yes | yes | only works for numeric types |
 
-min_blit is a stable, in place (fixed amount of stack space), quicksort
-
-#soa sorting is in a seperate file
 
 Functinality
 ---
-many, not all of core:slice are implemented, including:
+many, not all of core:slice are implemented, including: (not for all sorts)
 ```
 sort(arr, allocator)
 sort_by(arr, less, allocator)
