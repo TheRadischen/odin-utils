@@ -1,8 +1,9 @@
-Overview
+#Overview
 ---
 min_sort is based on readability and minimal LOC
 
-|  |  allocates | stable | comment |
+| Sort |  allocates | stable | comment |
+| ----------- | --- | ----------- | --- | --- |
 | min_lumoto | no | no | fastest |
 | min_flux | yes | yes | ~ 20 % slower |
 | min_blit | no* | yes | worse growth |
