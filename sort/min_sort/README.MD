@@ -4,10 +4,10 @@ min_sort is based on readability and minimal LOC
 
 | Sort |  allocates | stable | comment |
 | ----------- | --- | ----------- | --- |
-| min_lumoto | no | no | fastest |
+| min_lumoto | no | no | great general sort |
 | min_flux | yes | yes | ~ 20 % slower |
 | min_blit | no* | yes | worse growth |
-| radix | yes | yes | only works for numeric types |
+| radix | yes | yes | only works for numeric types, but fastest in many cases |
 
 
 Functinality
