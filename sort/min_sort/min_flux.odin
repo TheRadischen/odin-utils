@@ -7,6 +7,8 @@ import "base:intrinsics"
 	https://github.com/scandum
 */
 
+// uncomment if used independently
+
 // ORD :: intrinsics.type_is_ordered
 // Ordering :: enum {
 // 	Less = -1,

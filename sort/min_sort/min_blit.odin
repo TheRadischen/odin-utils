@@ -8,6 +8,14 @@ import "base:intrinsics"
 	https://github.com/scandum
 */
 
+// uncomment if used independently
+
+// ORD :: intrinsics.type_is_ordered
+// Ordering :: enum {
+// 	Less = -1,
+// 	Equal = 0,
+// 	Greater = 1,
+// }
 BLIT_SWAP :: 512
 
 /*
