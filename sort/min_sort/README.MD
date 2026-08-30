@@ -4,9 +4,9 @@ min_sort features fast sorting algorithms that are easy to read and small in siz
 
 | Sort |  allocates | stable | comment |
 | ----------- | --- | ----------- | --- |
-| min_lumoto | no | no | great general sort |
-| min_flux | yes | yes | ~ 20 % slower |
-| min_blit | no* | yes | worse growth |
+| min_lumoto | no | no | default general sort |
+| min_flux | yes | yes | default stable sort |
+| min_blit | no* | yes | only allocates stack memory |
 | radix | yes | yes | only works for numeric types |
 | piposort | yes | yes | mergesort |
 
