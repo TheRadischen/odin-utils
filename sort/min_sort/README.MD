@@ -8,7 +8,7 @@ min_sort features fast sorting algorithms that are easy to read and small in siz
 | min_flux | yes | yes | default stable sort |
 | min_blit | no* | yes | only allocates stack memory |
 | radix | yes | yes | only works for numeric types |
-| piposort | yes | yes | mergesort |
+
 
 
 API
