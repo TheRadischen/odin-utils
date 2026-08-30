@@ -11,6 +11,20 @@ min_merge :: proc(arr: []int) {
 // 		arr[l], arr[r] = arr[r], arr[l]
 // 	}
 // }
+@export
+branchless_swap_dist2 :: #force_inline proc(arr: []int, l,r: int) #no_bounds_check {
+    x := cast(int)(arr[l] > arr[r]) * (r - l)
+	arr[l], arr[r] = arr[x + l], arr[r-x]
+}
+@export
+sort4_network :: proc(arr: []int) {
+	cond_swap(arr,0,2)
+	cond_swap(arr,1,3)
+	cond_swap(arr,0,1)
+	cond_swap(arr,2,3)
+	cond_swap(arr,1,2)
+}
+cond_swap :: branchless_swap_dist2
 
 cond_swap :: branchless_swap_dist2
 

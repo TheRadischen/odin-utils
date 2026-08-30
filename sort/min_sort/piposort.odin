@@ -1,4 +1,4 @@
-package piposort
+package msort
 
 import "base:intrinsics"
 
@@ -36,113 +36,113 @@ MIN_ODD_EVEN :: 7
 
 // provide a cmp like proc(l, r:int) -> {return l > r}  left > right for descending order. like c
 piposort :: proc(arr: $A , cmp: proc($T,T)->bool){
-    when intrinsics.type_is_slice(type_of(arr)) {
-        swap := make([]T,len(arr))
-    } else {
-        swap := make(#soa[]T,len(arr))
-    }
-    ping_pong_swap(arr,swap,cmp)
-    delete(swap)
+	when intrinsics.type_is_slice(type_of(arr)) {
+		swap := make([]T,len(arr))
+	} else {
+		swap := make(#soa[]T,len(arr))
+	}
+	ping_pong_swap(arr,swap,cmp)
+	delete(swap)
 }
 insertion_sort_cmp :: proc(arr: $A, cmp: proc($T, T) -> bool) {
-    arr:= arr
-    for i in 1..<len(arr) {
-        x := arr[i]
-        j := i
-        for ; j > 0 && cmp(arr[j - 1],x ); j -= 1 {
-            arr[j] = arr[j - 1]
-        }
-        arr[j] = x
-    }
+	arr:= arr
+	for i in 1..<len(arr) {
+		x := arr[i]
+		j := i
+		for ; j > 0 && cmp(arr[j - 1],x ); j -= 1 {
+			arr[j] = arr[j - 1]
+		}
+		arr[j] = x
+	}
 }
 ping_pong_swap :: proc(arr, swap: $A, cmp: proc($T,T)->bool){
-    arr:= arr
-    n := len(arr)
-    if n <= MIN_ODD_EVEN {
-        insertion_sort_cmp(arr,cmp)
-        return
-    }
+	arr:= arr
+	n := len(arr)
+	if n <= MIN_ODD_EVEN {
+		insertion_sort_cmp(arr,cmp)
+		return
+	}
 
-    half1 := n >> 1
-    quad1 := half1 >> 1
-    quad2 := half1 - quad1
-    half2 := n - half1
-    quad3 := half2 >> 1
-    quad4 := half2 - quad3
+	half1 := n >> 1
+	quad1 := half1 >> 1
+	quad2 := half1 - quad1
+	half2 := n - half1
+	quad3 := half2 >> 1
+	quad4 := half2 - quad3
 
-    ping_pong_swap(arr[:quad1],swap,cmp)
-    ping_pong_swap(arr[quad1:][:quad2],swap,cmp)
-    ping_pong_swap(arr[half1:][:quad3],swap,cmp)
-    ping_pong_swap(arr[half1 + quad3:],swap,cmp)
+	ping_pong_swap(arr[:quad1],swap,cmp)
+	ping_pong_swap(arr[quad1:][:quad2],swap,cmp)
+	ping_pong_swap(arr[half1:][:quad3],swap,cmp)
+	ping_pong_swap(arr[half1 + quad3:],swap,cmp)
 
-    if !cmp(arr[quad1 - 1],arr[quad1]) &&
-       !cmp(arr[half1 - 1], arr[half1]) &&
-       !cmp(arr[half1 + quad3 - 1], arr[half1 + quad3]) {
-        return
-    }
+	if !cmp(arr[quad1 - 1],arr[quad1]) &&
+	   !cmp(arr[half1 - 1], arr[half1]) &&
+	   !cmp(arr[half1 + quad3 - 1], arr[half1 + quad3]) {
+		return
+	}
 
-    if cmp(arr[0], arr[half1 - 1]) && 
-       cmp(arr[quad1], arr[half1 + quad3 - 1]) &&
-       cmp(arr[half1], arr[len(arr) - 1]) {
-        aux_rotation(arr,swap,quad1,quad2+half2)
-        aux_rotation(arr,swap,quad2,half2)
-        aux_rotation(arr,swap,quad3,quad4)
-        return
-    }
+	if cmp(arr[0], arr[half1 - 1]) && 
+	   cmp(arr[quad1], arr[half1 + quad3 - 1]) &&
+	   cmp(arr[half1], arr[len(arr) - 1]) {
+		aux_rotation(arr,swap,quad1,quad2+half2)
+		aux_rotation(arr,swap,quad2,half2)
+		aux_rotation(arr,swap,quad3,quad4)
+		return
+	}
 
-    oddeven_parity_merge(arr, swap, quad1, quad2, cmp)
-    oddeven_parity_merge(arr[half1:], swap[half1:],quad3, quad4, cmp)
-    oddeven_parity_merge(swap,arr, half1, half2, cmp)
+	oddeven_parity_merge(arr, swap, quad1, quad2, cmp)
+	oddeven_parity_merge(arr[half1:], swap[half1:],quad3, quad4, cmp)
+	oddeven_parity_merge(swap,arr, half1, half2, cmp)
 
 }
 oddeven_parity_merge :: proc(from, dest: $A, left, right: int, greater: proc($T,T)-> bool){
-    dest := dest; from := from
-    
-    ptl := 0
-    ptr := left
-    ptd := 0 
-    tpl := ptr - 1
-    tpr := tpl + right
-    tpd := left + right - 1
+	dest := dest; from := from
+	
+	ptl := 0
+	ptr := left
+	ptd := 0 
+	tpl := ptr - 1
+	tpr := tpl + right
+	tpd := left + right - 1
 
-    if left < right {
-        dest[ptd] = !greater(from[ptl],from[ptr]) ? pp(from, &ptl, T) : pp(from, &ptr, T); ptd += 1    
-    }
-    dest[ptd] = !greater(from[ptl],from[ptr]) ? pp(from, &ptl, T) : pp(from, &ptr, T); ptd += 1
+	if left < right {
+		dest[ptd] = !greater(from[ptl],from[ptr]) ? pp(from, &ptl, T) : pp(from, &ptr, T); ptd += 1	
+	}
+	dest[ptd] = !greater(from[ptl],from[ptr]) ? pp(from, &ptl, T) : pp(from, &ptr, T); ptd += 1
 
-    for left := left - 1; left > 0; left -= 1 {
-        dest[ptd] = !greater(from[ptl],from[ptr]) ? pp(from, &ptl, T) : pp(from, &ptr, T); ptd += 1
-        dest[tpd] = greater(from[tpl],from[tpr]) ? nn(from, &tpl, T) : nn(from, &tpr, T); tpd -= 1
-    }
-    
-    dest[tpd] = greater(from[tpl],from[tpr]) ? from[tpl] : from[tpr]
+	for left := left - 1; left > 0; left -= 1 {
+		dest[ptd] = !greater(from[ptl],from[ptr]) ? pp(from, &ptl, T) : pp(from, &ptr, T); ptd += 1
+		dest[tpd] = greater(from[tpl],from[tpr]) ? nn(from, &tpl, T) : nn(from, &tpr, T); tpd -= 1
+	}
+	
+	dest[tpd] = greater(from[tpl],from[tpr]) ? from[tpl] : from[tpr]
 }
 pp :: #force_inline proc(arr: $A, pointer: ^int, $T: typeid) -> T #no_bounds_check {
-    res := arr[pointer^]
-    pointer^ += 1
-    return res
+	res := arr[pointer^]
+	pointer^ += 1
+	return res
 }
 nn :: #force_inline proc(arr: $A, pointer: ^int, $T: typeid) -> T #no_bounds_check {
-    res := arr[pointer^]
-    pointer^ -= 1
-    return res
+	res := arr[pointer^]
+	pointer^ -= 1
+	return res
 }
 
 
 aux_rotation :: proc(arr,swap: $A,left, right: int){
-    pip_copy(swap,arr[:left])
-    pip_copy(arr,arr[left:][:right])
-    pip_copy(arr[right:],swap[:left])
+	pip_copy(swap,arr[:left])
+	pip_copy(arr,arr[left:][:right])
+	pip_copy(arr[right:],swap[:left])
 }
 
 pip_copy :: proc(arr, swap: $A){
-    when intrinsics.type_is_slice(A) {
-        copy(arr, swap)
-    } else {
-        arr := arr; swap := swap
-        length := min(len(arr),len(swap))
-        for i in 0..<length {
-            arr[i] = swap[i]
-        }
-    }
+	when intrinsics.type_is_slice(A) {
+		copy(arr, swap)
+	} else {
+		arr := arr; swap := swap
+		length := min(len(arr),len(swap))
+		for i in 0..<length {
+			arr[i] = swap[i]
+		}
+	}
 }
