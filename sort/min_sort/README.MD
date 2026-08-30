@@ -6,7 +6,7 @@ min_sort features fast sorting algorithms that are easy to read and small in siz
 | ----------- | --- | ----------- | --- |
 | min_lumoto | no | no | default general sort |
 | min_flux | yes | yes | default stable sort |
-| min_blit | no* | yes | only allocates stack memory |
+| min_blit | no* | yes | only allocates stack memory (unless sorting with indices) |
 | radix | yes | yes | only works for numeric types |
 
 
