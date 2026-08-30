@@ -1,6 +1,6 @@
 #Overview
 ---
-min_sort is based on readability and minimal LOC
+min_sort features fast sorting algorithms that are easy to read and small in size
 
 | Sort |  allocates | stable | comment |
 | ----------- | --- | ----------- | --- |
