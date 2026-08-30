@@ -11,7 +11,7 @@ min_sort is based on readability and minimal LOC
 | piposort | yes | yes | mergesort |
 
 
-Functinality
+API
 ---
 many, not all of core:slice are implemented, including: (not for all sorts)
 ```
