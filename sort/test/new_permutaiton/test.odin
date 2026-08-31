@@ -10,13 +10,13 @@ main :: proc(){
 		test(i)
 	}
 }
-
-
+Data :: struct{
+	rand: int,
+	junk: [5]int,
+}
+data_less :: proc(l, r: Data) -> bool {return l.rand < r.rand}
 test :: proc(size: int) {
-	Data :: struct{
-		rand: int,
-		junk: [5]int,
-	}
+
 
 	arr := make([]int, size)
 	arr2 := make([]int, size)
@@ -38,8 +38,8 @@ test :: proc(size: int) {
 		copy(arr2, arr)
 		copy(data2, data)
 
-		ind := slice.sort_by_with_indices(data, proc(l, r: Data) -> bool {return l.rand < r.rand})
-		ind2 := slice.sort_with_indices(arr)
+		ind := slice.sort_with_indices(arr)
+		ind2 := slice.sort_by_with_indices(data, data_less)
 
 		start := time.tick_now()
 		slice.sort_from_permutation_indices(arr2, ind)
@@ -48,6 +48,19 @@ test :: proc(size: int) {
 		start2 := time.tick_now()
 		slice.sort_from_permutation_indices(data2, ind2)
 		dur2 := time.tick_since(start2)
+
+		if !is_sorted(arr) {
+			panic("not sorted")
+		}
+		if !is_sorted(arr2) {
+			panic("not sorted")
+		}
+		if !is_sorted_by(data, data_less) {
+			panic("not sorted")
+		}
+		if !is_sorted_by(data2, data_less) {
+			panic("not sorted")
+		}
 
 		for &a in data {
 			a.rand = rand.int_max(size)
@@ -58,8 +71,8 @@ test :: proc(size: int) {
 		copy(arr2, arr)
 		copy(data2, data)
 
-		ind3 := sort_by_with_indices(data, proc(l, r: Data) -> bool {return l.rand < r.rand})
-		ind4 := sort_with_indices(arr)
+		ind3 := sort_with_indices(arr)
+		ind4 := sort_by_with_indices(data, data_less)
 
 		start3 := time.tick_now()
 		sort_from_permutation_indices(arr2, ind3)
@@ -68,6 +81,20 @@ test :: proc(size: int) {
 		start4 := time.tick_now()
 		sort_from_permutation_indices(data2, ind4)
 		dur4 := time.tick_since(start4)
+
+		if !is_sorted(arr) {
+			panic("not sorted")
+		}
+		if !is_sorted(arr2) {
+			panic("not sorted")
+		}
+		if !is_sorted_by(data, data_less) {
+			panic("not sorted")
+		}
+		if !is_sorted_by(data2, data_less) {
+			panic("not sorted")
+		}
+
 
 		times1[i] = dur
 		times2[i] = dur2
