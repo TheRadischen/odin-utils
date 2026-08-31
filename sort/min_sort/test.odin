@@ -1,3 +1,4 @@
+// #+ignore
 package msort
 
 import "core:time"
@@ -322,7 +323,7 @@ main :: proc(){
 Data :: struct {
 	rand:int,
 	index:int,
-	data:[200]int,
+	data:[20]int,
 }
 
 less_int :: proc(l,r:int)->bool{return l < r}

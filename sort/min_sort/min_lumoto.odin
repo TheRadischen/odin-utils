@@ -72,8 +72,8 @@ sort_inlined_with_indices :: proc(arr: $T/[]$E, allocator := context.allocator) 
 
 			base_type :: intrinsics.type_core_type(E)
 			base := transmute([]base_type)arr
-			_quick_lomuto(indices, &base, proc(l, r: int, user_data: ^T) -> bool {
-				return user_data[l] < user_data[r]
+			_quick_lomuto(indices, base, proc(l, r: int, arr: []base_type) -> bool {
+				return arr[l] < arr[r]
 			})
 			
 			sort_from_permutation_indices(arr, indices)
@@ -105,9 +105,9 @@ sort_inlined_by_with_indices :: proc(arr: $T/[]$E, $LESS: proc(l, r: E) -> bool,
 				index = i
 			}
 
-			arr := arr
-			_quick_lomuto(indices, &arr, proc(l, r: int, user_data: ^T) -> bool {
-				return LESS(user_data[l], user_data[r])
+			// arr := arr
+			_quick_lomuto(indices, arr, proc(l, r: int, arr: T) -> bool {
+				return LESS(arr[l], arr[r])
 			})
 
 			sort_from_permutation_indices(arr, indices)
@@ -176,9 +176,9 @@ sort_inlined_by_with_indices_with_data :: proc(arr: $T/[]$E, $LESS: proc(l, r: E
 				user_data: ^D,
 			}
 			arr := arr
-			ctx := &Context{arr, user_data}
+			ctx := Context{arr, user_data}
 
-			_quick_lomuto(indices, ctx, proc(l, r: int, ctx: ^Context) -> bool {
+			_quick_lomuto(indices, ctx, proc(l, r: int, ctx: Context) -> bool {
 				return LESS(ctx.arr[l], ctx.arr[r], ctx.user_data)
 			})
 
