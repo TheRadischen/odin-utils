@@ -506,8 +506,7 @@ test_slice_with_data_indecies_100_000 :: proc() {
 
 		
 		start := time.tick_now()
-		sort.sort_inlined_by_with_indices_with_data(arr1, proc(l, r: int, user_data: rawptr)->bool{
-			data := (^[]int)(user_data)
+		sort.sort_inlined_by_with_indices_with_data(arr1, proc(l, r: int, data: ^[]int)->bool{
 			return data[l %% 10] < data[r %% 10]
 		}, &data)
 		end1 := time.tick_since(start)
