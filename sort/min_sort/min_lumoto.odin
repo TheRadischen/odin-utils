@@ -219,7 +219,6 @@ sort_inlined_by_cmp_with_data :: proc(arr: $T/[]$E, $CMP: proc(l, r: E, user_dat
 	}
 }
 
-@private
 sort_from_permutation_indices :: proc(data: $T/[]$E, indices: []int) {
 	assert(len(data) == len(indices))
 	if len(indices) <= 1 {
@@ -239,14 +238,16 @@ sort_from_permutation_indices :: proc(data: $T/[]$E, indices: []int) {
 		}
 
 		cur_index := i
+		temp := data[cur_index]
 		for next_index != i {
 			indices[cur_index] *= -1
 
-			data[cur_index], data[next_index] = data[next_index], data[cur_index]
+			data[cur_index] = data[next_index]
 			
 			cur_index = next_index
 			next_index = indices[cur_index]
 		}
+		data[cur_index] = temp
 		indices[i] *= -1
 	}
 }
