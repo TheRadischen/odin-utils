@@ -31,6 +31,9 @@ test :: proc(size: int) {
 	for i in 0..<ITER {
 		for &a in data {
 			a.rand = rand.int_max(size)
+			for &jj in a.junk {
+				jj = rand.int_max(size)
+			}
 		}
 		for &a in arr {
 			a = rand.int_max(size)
@@ -50,20 +53,27 @@ test :: proc(size: int) {
 		dur2 := time.tick_since(start2)
 
 		if !is_sorted(arr) {
+			fmt.println(arr[:10])
 			panic("not sorted")
 		}
 		if !is_sorted(arr2) {
+			fmt.println(arr2[:10])
 			panic("not sorted")
 		}
 		if !is_sorted_by(data, data_less) {
+			fmt.println(data[:10])
 			panic("not sorted")
 		}
 		if !is_sorted_by(data2, data_less) {
+			fmt.println(data2[:10])
 			panic("not sorted")
 		}
 
 		for &a in data {
 			a.rand = rand.int_max(size)
+			for &jj in a.junk {
+				jj = rand.int_max(size)
+			}
 		}
 		for &a in arr {
 			a = rand.int_max(size)
@@ -83,18 +93,21 @@ test :: proc(size: int) {
 		dur4 := time.tick_since(start4)
 
 		if !is_sorted(arr) {
+			fmt.println(arr[:10])
 			panic("not sorted")
 		}
 		if !is_sorted(arr2) {
+			fmt.println(arr2[:10])
 			panic("not sorted")
 		}
 		if !is_sorted_by(data, data_less) {
+			fmt.println(data[:10])
 			panic("not sorted")
 		}
 		if !is_sorted_by(data2, data_less) {
+			fmt.println(data2[:10])
 			panic("not sorted")
 		}
-
 
 		times1[i] = dur
 		times2[i] = dur2

@@ -235,7 +235,7 @@ mini_flux :: proc(arr: $A/[]$T, data: $D, $LESS: $P, allocator := context.alloca
 		for {
 			if len(arr) <= 48 {
 				if raw_data(arr) != raw_data(cur) {
-					copy(arr, cur)
+					intrinsics.mem_copy_non_overlapping(raw_data(arr), raw_data(cur), len(cur) * size_of(T))
 				}
 
 				if leftmost {

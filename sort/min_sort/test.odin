@@ -344,12 +344,12 @@ less_data_modulus_raw :: proc(l,r:Data, user_data: rawptr)->bool{
 ran :: proc{rand_arr, rand_data}
 rand_arr :: proc(arr: []int) {
 	for &a in arr {
-		a = rand.int_max(len(arr))
+		a = len(arr) / 2 - rand.int_max(len(arr))
 	}
 }
 rand_data :: proc(arr: []Data) {
 	for &a,i in arr {
-		a.rand = rand.int_max(len(arr))
+		a.rand = len(arr) / 2 - rand.int_max(len(arr))
 		a.index = i
 	}
 }
