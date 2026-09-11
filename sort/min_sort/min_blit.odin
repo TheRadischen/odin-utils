@@ -233,7 +233,7 @@ mini_blit :: proc(arr: $A/[]$T, data: $D, $LESS: $P) {
 	loop :: proc(arr, swap: A, data: D, last_piv: Maybe(T), leftmost: bool) #no_bounds_check {
 		arr := arr; last_piv := last_piv; leftmost := leftmost
 		for {
-			if len(arr) <= 32 {
+			if len(arr) <= 48 {
 				if leftmost {
 					insertion_sort(arr, data)
 				} else {
@@ -254,8 +254,7 @@ mini_blit :: proc(arr: $A/[]$T, data: $D, $LESS: $P) {
 
 			left := partition(arr, swap, data, pivot)
 			right := len(arr) - left
-			// ips(arr[left:], swap, data, pivot)
-			// #must_tail ips(arr[:left], swap, data, pivot)			
+		
 			if left < right {
 				loop(arr[:left], swap, data, pivot, leftmost)
 				arr = arr[left:]
@@ -341,7 +340,8 @@ mini_blit :: proc(arr: $A/[]$T, data: $D, $LESS: $P) {
 			less += x
 		}
 
-		copy(arr[less:], swap)
+		// copy(arr[less:], swap)
+		intrinsics.mem_copy_non_overlapping(&arr[less],&swap[0], (len(arr) - less) * size_of(T))
 		
 		return less
 	}
@@ -368,7 +368,8 @@ mini_blit :: proc(arr: $A/[]$T, data: $D, $LESS: $P) {
 			less += x
 		}
 
-		copy(arr[less:], swap)
+		// copy(arr[less:], swap)
+		intrinsics.mem_copy_non_overlapping(&arr[less],&swap[0], (len(arr) - less) * size_of(T))
 		
 		return less
 	}

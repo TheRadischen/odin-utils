@@ -146,7 +146,6 @@ soa_ips_sort :: proc(arr: $A/#soa[]$T, data: $D, $CMP: $P) {
 	}
 	// needs a better rotate
 	rotate :: proc(arr: A, pos: int) {
-		
 		reverse(arr[:pos])
 		reverse(arr[pos:])
 		reverse(arr)
