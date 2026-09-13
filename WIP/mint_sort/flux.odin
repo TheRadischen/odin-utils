@@ -3,233 +3,80 @@ package msort
 import "core:fmt"
 import "base:intrinsics"
 
-/*
-	thanks to scandum for flux partitioning
-	https://github.com/scandum
-*/
 
-// uncomment if used independently
-
-// ORD :: intrinsics.type_is_ordered
-// Ordering :: enum {
-// 	Less = -1,
-// 	Equal = 0,
-// 	Greater = 1,
-// }
-
-/*
-WARNING: each call generates a new quicksort, only use in performance critical path
-
-This sort is stable
-
-	example :: proc() {
-		arr := []int{3,2,1}
-		sort.sort_stable(arr)
-	}
-*/
-sort_stable :: proc(arr: $T/[]$E, allocator := context.allocator) where ORD(E) {
+sort_thread :: proc(arr: $T/[]$E, allocator := context.allocator) where ORD(E) {
 	when size_of(E) != 0 {
 		if len(arr) > 1 {
 			base_type :: intrinsics.type_core_type(E)
-			mini_flux(transmute([]base_type)arr, rawptr(nil), proc(l, r: base_type, data: rawptr) -> bool { return l < r }, allocator)
+			mini_thread(transmute([]base_type)arr, rawptr(nil), proc(l, r: base_type, data: rawptr) -> bool { return l < r }, allocator)
 		}
 	}
 }
 
 
-/*
-WARNING: each call generates a new quicksort, only use in performance critical path
 
-This sort is stable
-
-	example :: proc() {
-		Data :: struct { rand: int, data: int }
-		data_less :: proc(l, r: Data) -> bool { return l.rand < r.rand }
-		arr := make([]Data, 10)
-		// fill with data
-		sort.sort_stable_by(arr, data_less)
-	}
-*/
-sort_stable_by :: proc(arr: $T/[]$E, $LESS: proc(l, r: E) -> bool, allocator := context.allocator) {
-	when size_of(E) != 0 {
-		if len(arr) > 1 {
-			mini_flux(arr, rawptr(nil), proc(l, r: E, data: rawptr) -> bool { return LESS(l, r) }, allocator)
-		}
-	}
-}
-
-/*
-WARNING: each call generates a new quicksort, only use in performance critical path
-
-This sort is stable
-
-	example :: proc() {
-		arr := []int{3,2,1}
-		indices := sort.sort_stable_with_indices(arr)
-		// arr = {1,2,3}
-		defer delete(indices)
-	}
-*/
-sort_stable_with_indices :: proc(arr: $T/[]$E, allocator := context.allocator) -> (indices: []int) where ORD(E) {
-	indices = make([]int, len(arr), allocator)
-	when size_of(E) != 0 {
-		if len(arr) > 1 {
-			for &index, i in indices{
-				index = i
-			}
-
-			base_type :: intrinsics.type_core_type(E)
-			base := transmute([]base_type)arr
-			mini_flux(indices, &base, proc(l, r: int, user_data: ^T) -> bool {
-				return user_data[l] < user_data[r]
-			}, allocator)
-			
-			sort_from_permutation_indices(arr, indices)
-		}
-	}
-	return indices
-}
-
-/*
-WARNING: each call generates a new quicksort, only use in performance critical path
-
-This sort is stable
-
-	example :: proc() {
-		Data :: struct { rand: int, data: [10]int }
-		data_less :: proc(l, r: Data) -> bool { return l.rand < r.rand }
-		arr := make([]Data, 10)
-		// fill with data
-		sort.sort_stable_by_with_indices(arr, data_less, context.temp_allocator)
-		free_all(context.temp_allocator)
-	}
-*/
-sort_stable_by_with_indices :: proc(arr: $T/[]$E, $LESS: proc(l, r: E) -> bool, allocator := context.allocator) -> (indices: []int) {
-	indices = make([]int, len(arr), allocator)
-
-	when size_of(E) != 0 {
-		if len(arr) > 1 {
-			for &index, i in indices{
-				index = i
-			}
-
-			arr := arr
-			mini_flux(indices, &arr, proc(l, r: int, user_data: ^T) -> bool {
-				return LESS(user_data[l], user_data[r])
-			}, allocator)
-
-			sort_from_permutation_indices(arr, indices)
-		}
-	}
-	return indices
-}
-
-/*
-WARNING: each call generates a new quicksort, only use in performance critical path
-
-This sort is stable
-
-	example :: proc() {
-		Data :: struct { rand: int, data: [10]int }
-		modulus := []int{5,4,6,7,3,2,1,8,9,0}
-		less_data_modulus :: proc(l, r: Data, mod: ^[]int)->bool{
-			left := l.rand %% 10
-			right := r.rand %% 10
-			return mod[left] < mod[right]
-		}
-		arr := make([]Data, 10)
-		// fill with data
-		sort.sort_stable_by_with_data(data, less_data_modulus, &modulus)
-	}
-*/
-sort_stable_by_with_data :: proc(arr: $T/[]$E, $LESS: proc(l, r: E, user_data: ^$D) -> bool, user_data: ^D, allocator := context.allocator) {
-	when size_of(E) != 0 {
-		if len(arr) > 1 {
-			mini_flux(arr, user_data, proc(l, r: E, user_data: ^D) -> bool {
-				return LESS(l, r, user_data)
-			}, allocator)
-		}
-	}
-}
-
-/*
-WARNING: each call generates a new quicksort, only use in performance critical path
-
-This sort is stable
-
-	example :: proc() {
-		Data :: struct { rand: int, data: [10]int }
-		modulus := []int{5,4,6,7,3,2,1,8,9,0}
-		less_data_modulus :: proc(l, r: Data, mod: ^[]int)->bool{
-			left := l.rand %% 10
-			right := r.rand %% 10
-			return mod[left] < mod[right]
-		}
-		arr := make([]Data, 10)
-		// fill with data
-		indices := sort.sort_stable_by_with_indices_with_data(data, less_data_modulus, &modulus)
-		defer delete(indices)
-	}
-*/
-sort_stable_by_with_indices_with_data :: proc(arr: $T/[]$E, $LESS: proc(l, r: E, user_data: ^$D) -> bool, user_data: ^D, allocator := context.allocator) -> (indices: []int) {
-	indices = make([]int, len(arr), allocator)
-	when size_of(E) != 0 {
-		if len(arr) > 1 {
-			for &index, i in indices{
-				index = i
-			}
-			
-			Context :: struct {
-				arr: T,
-				user_data: ^D,
-			}
-			arr := arr
-			ctx := &Context{arr, user_data}
-
-			mini_flux(indices, ctx, proc(l, r: int, ctx: ^Context) -> bool {
-				return LESS(ctx.arr[l], ctx.arr[r], ctx.user_data)
-			}, allocator)
-
-			sort_from_permutation_indices(arr, indices)
-		}
-	}
-	return indices
-}
-
-// WARNING: each call generates a new quicksort, only use in performance critical path
-//
-// This sort is stable
-sort_stable_by_cmp :: proc(arr: $T/[]$E, $CMP: proc(l, r: E) -> Ordering, allocator := context.allocator) {
-	when size_of(E) != 0 {
-		if len(arr) > 1 {
-			mini_flux(arr, rawptr(nil), proc(l, r: E, user_data: rawptr) -> bool { return CMP(l, r) == .Less }, allocator)
-		}
-	}
-}
-
-// WARNING: each call generates a new quicksort, only use in performance critical path
-//
-// This sort is stable
-sort_stable_by_cmp_with_data :: proc(arr: $T/[]$E, $CMP: proc(l, r: E, user_data: ^$D) -> Ordering, user_data: ^D, allocator := context.allocator) {
-	when size_of(E) != 0 {
-		if len(arr) > 1 {
-			mini_flux(arr, user_data, proc(l, r: E, user_data: ^D) -> bool {
-				return CMP(l, r, user_data) == .Less
-			}, allocator)
-		}
-	}
-}
-
-
-mini_flux :: proc(arr: $A/[]$T, data: $D, $LESS: $P, allocator := context.allocator) {
+mini_thread :: proc(arr: $A/[]$T, data: $D, $LESS: $P, allocator := context.allocator) {
 	if len(arr) <= 64 {
 		insertion_sort(arr, data)
 		return
 	}
-
+	// Task_Data :: struct {
+	// 	arr: []int,
+	// 	swap: []int,
+	// 	cur: []int,
+	// 	pivot: int,
+	// 	less: int, // out
+	// }
 	swap := make(A, len(arr), allocator)
-	loop(arr, swap, arr, data, nil, true)
+	// loop(arr, swap, arr, data, nil, true)
+	stacked(arr, swap, arr, data)
 	delete(swap, allocator)
+
+	MAX_THREADS :: 8
+
+	stacked :: proc(arr, swap, cur: A, data: D) {
+		parts := 1
+		stack : [MAX_THREADS][3]A
+		stack[0] = {arr, swap, cur}
+		for parts <= MAX_THREADS / 2 {
+
+			// splits := 16 / parts
+
+			for i := parts - 1; i >= 0; i -= 1 {
+
+				arr, swap, cur := stack[i][0], stack[i][1], stack[i][2]
+
+				fmt.println(parts,i,len(cur))
+				
+				depth := log2(len(cur)) / 5 
+				pivot := med3(cur, data, depth)
+
+				left := partition(arr, swap, cur, data, pivot)
+				right := len(cur) - left
+
+				stack[i*2+1] = {arr[left:], swap, swap[:right]}
+				stack[i*2] = {arr[:left], swap, arr[:left]}
+
+			}
+
+			parts *= 2
+		}
+		sum := 0
+		for s,i in stack {
+			l := len(s[0])
+			fmt.println(l)
+			sum += l
+		}
+		fmt.println(sum)
+		
+		for i := parts - 1; i >= 0; i -= 1 {
+
+			arr, swap, cur := stack[i][0], stack[i][1], stack[i][2]
+			loop(arr, swap, cur, data, nil, true)
+
+		}
+	}
+
 
 	loop :: proc(arr, swap, cur: A, data: D, last_piv: Maybe(T), leftmost: bool) #no_bounds_check {
 		arr := arr; cur := cur; last_piv := last_piv; leftmost := leftmost
@@ -336,6 +183,19 @@ mini_flux :: proc(arr: $A/[]$T, data: $D, $LESS: $P, allocator := context.alloca
 		}
 		
 		return less
+	}
+
+	partition_reverse :: proc(arr, swap, cur: A, data: D, piv: T) -> int #no_bounds_check {
+		less_equal := 0
+
+		#unroll(8) for a,i in cur {
+			x := cast(int)!LESS(piv, a, data)
+			arr[less_equal] = a
+			swap[i - less_equal] = a
+			less_equal += x
+		}
+		
+		return less_equal
 	}
 
 	partition_parity :: proc(arr, swap, cur: A, data: D, piv: T) -> int #no_bounds_check {
@@ -595,19 +455,6 @@ mini_flux :: proc(arr: $A/[]$T, data: $D, $LESS: $P, allocator := context.alloca
 		// fmt.println(arr)
 		// fmt.println(swap)
 		return less
-	}
-
-	partition_reverse :: proc(arr, swap, cur: A, data: D, piv: T) -> int #no_bounds_check {
-		less_equal := 0
-
-		#unroll(8) for a,i in cur {
-			x := cast(int)!LESS(piv, a, data)
-			arr[less_equal] = a
-			swap[i - less_equal] = a
-			less_equal += x
-		}
-		
-		return less_equal
 	}
 }
 
