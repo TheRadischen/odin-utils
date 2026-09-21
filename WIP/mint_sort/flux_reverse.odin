@@ -1,4 +1,4 @@
-package msort
+package ermsort
 
 import "core:fmt"
 import "base:intrinsics"
@@ -164,7 +164,7 @@ mini_flux_reverse :: proc(arr: $A/[]$T, data: $D, $LESS: $P, allocator := contex
 
 	partition :: proc(arr, swap, cur: A, data: D, piv: T) -> int  {
 		less := 0
-		swap := swap[len(swap) - 1:]
+		#no_bounds_check swap := swap[len(swap) - 1:]
 
 		#unroll(8) for a,i in cur {
 			x := cast(int)LESS(a, piv, data)

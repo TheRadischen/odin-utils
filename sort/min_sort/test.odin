@@ -16,7 +16,7 @@ SIZE :: 100_000
 main :: proc(){
 	arr := make([]int, SIZE)
 	data := make([]Data, SIZE)
-	ITER :: 10
+	ITER :: 100
 	times : [ITER]time.Duration
 	fmt.println("sorting 100_000 elements; Iterations", ITER)
 	fmt.println("fastest time | 25% time | 50% time | function name")

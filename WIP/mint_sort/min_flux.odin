@@ -1,4 +1,4 @@
-package msort
+package ermsort
 
 import "base:intrinsics"
 

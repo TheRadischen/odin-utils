@@ -1,5 +1,6 @@
 package msort
 
+import "core:fmt"
 import "base:intrinsics"
 
 ORD :: intrinsics.type_is_ordered
@@ -254,10 +255,10 @@ sort_from_permutation_indices :: proc(data: $T/[]$E, indices: []int) {
 
 @private
 _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
-	loop(arr, data, true)
+	loop(arr, data, true, 0)
 	
-	loop :: proc(arr: T, data: D, leftmost: bool) #no_bounds_check {
-		arr := arr; leftmost := leftmost
+	loop :: proc(arr: T, data: D, leftmost: bool, unbalanced: int) #no_bounds_check {
+		arr := arr; leftmost := leftmost; unbalanced := unbalanced
 
 		for {
 			if len(arr) <= 32 {
@@ -270,7 +271,13 @@ _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
 			}
 			
 			median_3_depth := log2(len(arr)) / 5
-			pivot_index := median_3(arr, data, 0, len(arr) - 1, median_3_depth)
+			rand := 0
+			if unbalanced >= 3 {
+				unbalanced -= 1
+				rand = cast(int)intrinsics.read_cycle_counter() & (63 if len(arr) > 2048 else 3)
+			}
+			
+			pivot_index := median_3(arr[rand:], data, 0, len(arr) - 1, median_3_depth)
 
 			if !leftmost {
 				if !LESS(arr[-1], arr[pivot_index], data) {
@@ -290,11 +297,17 @@ _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
 			right := len(arr) - left
 
 			if left < right {
-				loop(arr[:left], data, leftmost)
+				loop(arr[:left], data, leftmost, 0)
+				if left < right >> 5 {
+					unbalanced += 1
+				}
 				arr = arr[left + 1:]
 				leftmost = false
 			} else {
-				loop(arr[left + 1:], data, false)
+				loop(arr[left + 1:], data, false, 0)
+				if right < left >> 5 {
+					unbalanced += 1
+				}
 				arr = arr[:left]
 			}
 		}
@@ -307,7 +320,7 @@ _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
 		return log
 	}
 
-	median_3 :: proc(arr: T, data: D, start, end, depth: int) -> int #no_bounds_check {
+	median_3 :: proc(arr: T, data: D, start, end, depth: int) -> int  {
 		if depth == 0 {
 			return start
 		}
@@ -357,7 +370,7 @@ _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
 		arr[pivot_index] = arr[0]
 
 		j := 0
-		for _ in arr[:len(arr) - 1] {
+		#unroll(4) for _ in arr[:len(arr) - 1] {
 			arr[j] = arr[left]
 			j += 1
 			arr[left] = arr[j]
