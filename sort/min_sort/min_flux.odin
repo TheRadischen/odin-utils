@@ -1,6 +1,5 @@
 package msort
 
-import "core:fmt"
 import "base:intrinsics"
 
 /*

@@ -1,7 +1,6 @@
 // #+ignore
 package msort
 
-import "core:fmt"
 import "base:intrinsics"
 
 ORD :: intrinsics.type_is_ordered
