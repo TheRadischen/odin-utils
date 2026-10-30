@@ -1,3 +1,4 @@
+// #+ignore
 package msort
 
 import "core:fmt"
@@ -9,6 +10,7 @@ Ordering :: enum {
 	Equal = 0,
 	Greater = 1,
 }
+
 
 /*
 WARNING: each call generates a new quicksort, only use in performance critical path
@@ -111,7 +113,6 @@ sort_inlined_by_with_indices :: proc(arr: $T/[]$E, $LESS: proc(l, r: E) -> bool,
 				index = i
 			}
 
-			// arr := arr
 			_quick_lomuto(indices, arr, proc(l, r: int, arr: T) -> bool {
 				return LESS(arr[l], arr[r])
 			})
@@ -261,15 +262,15 @@ _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
 		arr := arr; leftmost := leftmost; unbalanced := unbalanced
 
 		for {
-			if len(arr) <= 32 {
-				if leftmost {
-					insertion_sort(arr, data)
+			if len(arr) <= 28 {
+				when size_of(E) > 100 {
+					shell_sort(arr, data)
 				} else {
-					unguarded_insertion_sort(arr, data)
+					pingpong(arr, data)
 				}
 				return
 			}
-			
+
 			median_3_depth := log2(len(arr)) / 5
 			rand := 0
 			if unbalanced >= 3 {
@@ -298,14 +299,16 @@ _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
 
 			if left < right {
 				loop(arr[:left], data, leftmost, 0)
-				if left < right >> 5 {
+				
+				if left < right / 32 {
 					unbalanced += 1
 				}
 				arr = arr[left + 1:]
 				leftmost = false
 			} else {
 				loop(arr[left + 1:], data, false, 0)
-				if right < left >> 5 {
+
+				if right < left / 32 {
 					unbalanced += 1
 				}
 				arr = arr[:left]
@@ -320,7 +323,7 @@ _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
 		return log
 	}
 
-	median_3 :: proc(arr: T, data: D, start, end, depth: int) -> int  {
+	median_3 :: proc(arr: T, data: D, start, end, depth: int) -> int #no_bounds_check {
 		if depth == 0 {
 			return start
 		}
@@ -340,31 +343,9 @@ _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
 		return swap[(int)(x == y) + (int)(y ~ z)]
 	}
 
-	insertion_sort :: proc(arr: T, data: D) #no_bounds_check {
-		for i in 1..<len(arr) {
-			current := arr[i]
-			j := i
-			for ; j > 0 && LESS(current, arr[j - 1], data); j -= 1 {
-				arr[j] = arr[j - 1]
-			}
-			arr[j] = current
-		}
-	}
-
-	unguarded_insertion_sort :: proc(arr: T, data: D) #no_bounds_check {
-		for i in 1..<len(arr) {
-			current := arr[i]
-			j := i
-			for ; LESS(current, arr[j - 1], data); j -= 1 {
-				arr[j] = arr[j - 1]
-			}
-			arr[j] = current
-		}
-	}
-
 	// branchless partitioning
 	// [  <  |0|  >=  |  ?  ]
-	//	    left    right ->
+	//	    left      j ->
 	partition_lomuto :: proc(arr: T, data: D, pivot_index: int) -> (left: int) #no_bounds_check {
 		pivot := arr[pivot_index]
 		arr[pivot_index] = arr[0]
@@ -384,7 +365,7 @@ _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
 	}
 
 	// [  ?  |  <=  |0|  >  ]
-	//   <- left   right
+	//   <-  j     right
 	partition_lomuto_reverse :: proc(arr: T, data: D, pivot_index: int) -> (right: int) #no_bounds_check {
 		right = len(arr) - 1
 
@@ -433,5 +414,151 @@ _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
 			right -= 1
 		}
 	}
+
+	shell_sort :: proc(arr: T, data: D) #no_bounds_check {
+		gaps := []int{23, 10, 4, 1}
+
+		for g in gaps {
+			for k := g; k < len(arr); k += 1 {
+				if !LESS(arr[k], arr[k - g], data) {
+					continue
+				}
+				cur := arr[k]
+				arr[k] = arr[k - g]
+
+				t := k - g
+				for t >= g && LESS(cur, arr[t - g], data) {
+					arr[t] = arr[t - g]
+					t -= g
+				}
+				arr[t] = cur
+			}
+		}
+	}
+
+	pingpong :: proc(arr: T, data: D) #no_bounds_check {
+		if len(arr) <= 7 {
+			networks(arr, data)
+			return
+		} 
+
+		half1 := len(arr) / 2
+		quad1 := half1 / 2
+		quad2 := half1 - quad1
+		half2 := len(arr) - half1
+		quad3 := half2 / 2
+		quad4 := half2 - quad3
+
+		networks(arr        [:quad1], data)
+		networks(arr[quad1:][:quad2], data)
+		networks(arr[half1:][:quad3], data)
+		networks(arr[half1 + quad3:], data)
+
+		if  !LESS(arr[quad1],         arr[quad1 - 1],         data) &&
+		    !LESS(arr[half1],         arr[half1 - 1],         data) &&
+		    !LESS(arr[half1 + quad3], arr[half1 + quad3 - 1], data) {
+				return
+		}
+
+		swap: [SMALL_THRESHOLD]E = ---
+		parity_merge(swap[:half1], arr[:half1], quad1, quad2, data)
+		parity_merge(swap[half1:], arr[half1:], quad3, quad4, data)
+		parity_merge(arr,          swap[:],     half1, half2, data)
+	}
+
+	parity_merge :: proc(to, from: T, left, right: int, data: D) #no_bounds_check {
+		left_low := 0
+		left_high := left - 1
+		right_low := left
+		right_high := left + right - 1
+		write_low := 0
+		write_high := right_high
+
+		for _ in 0..<left {
+			to[inc(&write_low)] = from[inc(&right_low)] if LESS(from[right_low], from[left_low], data) else from[inc(&left_low)]
+			to[dec(&write_high)] = from[dec(&left_high)] if LESS(from[right_high], from[left_high], data) else from[dec(&right_high)]
+		}
+
+		if left != right {
+			to[inc(&write_low)] = from[inc(&right_low)] if LESS(from[right_low], from[left_low], data) else from[inc(&left_low)]
+		}
+	}
+
+	cond_swap :: #force_inline proc(arr: T, data: D, l, r: int) #no_bounds_check {
+		x := cast(int)LESS(arr[l], arr[r], data) * (r - l)
+		arr[l], arr[r] = arr[r - x], arr[l + x]
+	}
+
+	networks :: proc(arr: T, data: D) #no_bounds_check {
+		switch len(arr) {
+		case 7: 
+			cond_swap(arr, data, 0, 6)
+			cond_swap(arr, data, 2, 3)
+			cond_swap(arr, data, 4, 5)
+			cond_swap(arr, data, 0, 2)
+			cond_swap(arr, data, 1, 4)
+			cond_swap(arr, data, 3, 6)
+			cond_swap(arr, data, 0, 1)
+			cond_swap(arr, data, 2, 5)
+			cond_swap(arr, data, 3, 4)
+			cond_swap(arr, data, 1, 2)
+			cond_swap(arr, data, 4, 6)
+			cond_swap(arr, data, 2, 3)
+			cond_swap(arr, data, 4, 5)
+			cond_swap(arr, data, 1, 2)
+			cond_swap(arr, data, 3, 4)
+			cond_swap(arr, data, 5, 6)
+		case 6: 
+			cond_swap(arr, data, 0, 5)
+			cond_swap(arr, data, 1, 3)
+			cond_swap(arr, data, 2, 4)
+			cond_swap(arr, data, 1, 2)
+			cond_swap(arr, data, 3, 4)
+			cond_swap(arr, data, 0, 3)
+			cond_swap(arr, data, 2, 5)
+			cond_swap(arr, data, 0, 1)
+			cond_swap(arr, data, 2, 3)
+			cond_swap(arr, data, 4, 5)
+			cond_swap(arr, data, 1, 2)
+			cond_swap(arr, data, 3, 4)
+		case 5: 
+			cond_swap(arr, data, 0, 3)
+			cond_swap(arr, data, 1, 4)
+			cond_swap(arr, data, 0, 2)
+			cond_swap(arr, data, 1, 3)
+			cond_swap(arr, data, 0, 1)
+			cond_swap(arr, data, 2, 4)
+			cond_swap(arr, data, 1, 2)
+			cond_swap(arr, data, 3, 4)
+			cond_swap(arr, data, 2, 3)
+		case 4: 
+			cond_swap(arr, data, 0, 2)
+			cond_swap(arr, data, 1, 3)
+			cond_swap(arr, data, 0, 1)
+			cond_swap(arr, data, 2, 3)
+			cond_swap(arr, data, 1, 2)
+		case 3: 
+			cond_swap(arr, data, 0, 2)
+			cond_swap(arr, data, 0, 1)
+			cond_swap(arr, data, 1, 2)
+		case 2: 
+			cond_swap(arr, data, 0, 1)
+		case 0,1:
+		}
+	}
+
+	inc :: #force_inline proc(ptr: ^int) -> int {
+		defer ptr^ += 1
+		return ptr^
+	}
+
+	dec :: #force_inline proc(ptr: ^int) -> int {
+		defer ptr^ -= 1
+		return ptr^
+	}
 }
+
+
+
+
 

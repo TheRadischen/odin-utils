@@ -20,23 +20,24 @@ quadsort_swap :: proc(arr, swap: $A, greater: proc($T,T) -> bool){
 entry point
 allocates n memory, unless we sort 32 or smaller, with according to rust telemetry  95% of sorts are on arrays of len <= 20
 */
-// quadsort :: proc(arr: $A, greater: proc($T,T) -> bool){
+quadsort :: proc(arr: $A, greater: proc($T,T) -> bool, allocator := context.allocator) -> A {
+    if len(arr) <= 32 {
+    	when intrinsics.type_is_slice(A) {
+        	swap : [32]T = ---
+		} else {
+			swap : #soa[32]T = ---
+		}
+        tail_swap(arr, swap[:], greater)
+        return nil
+    }
+    swap := make(A,len(arr))
 
-//              append(&function,strings.clone_to_cstring(fmt.aprint(caller)))//;append(&function, "quadsort_swap")
-//     if len(arr) <= 32 {
-//         swap : [32]T
-//         tail_swap(arr, swap, greater)
-//         return
-//     }
-//     swap := make(A,len(arr))
-//     if swap == nil {
-//         inplace_sort(arr, greater)
-//     }
-//     if !quad_swap(arr, swap, greater) {
-//         block := quad_merge(arr, swap, 32, greater)
-//         rotate_merge(arr, swap, block, greater)
-//     }
-// }
+    if !quad_swap(arr, swap, greater) {
+        block := quad_merge(arr, swap, 32, greater)
+        rotate_merge(arr, swap, block, greater)
+    }
+	return swap
+}
 
 /*
 the first pass over the array when len(arr) > 96
@@ -1135,6 +1136,29 @@ unfortunatly llvm doesnt produce branchless code for this by default
 
 binary search that finds the first instance of val
 */
+cmov :: asm(m1, m2: int, c1, c2: int) -> (r: int) [
+    m1 -> r,
+] {
+    cmp c2, c1
+    cmovle r, m2
+}
+
+binary_cmp_count := 0
+bin_search:: proc(arr: []int, value: int) -> (int, bool)  #no_bounds_check {
+    top := len(arr)
+    base := len(arr)
+    
+    for top > 1 {
+        mid := top >> 1
+binary_cmp_count += 1
+        base = cmov(base, base - mid, arr[base - mid], value )
+        top -= mid
+    }
+	if value <= arr[base - 1]{
+        base -= 1
+    }
+    return base, value == arr[base]
+}
 mono_bound_binary_first :: #force_inline proc(arr: $A, greater: proc($T,T) -> bool, val: T) -> int #no_bounds_check {
 
     end := len(arr)
@@ -1168,8 +1192,8 @@ rotate_merge_block :: proc(arr, swap: $A, lblock: int, greater: proc($T,T) -> bo
     // take 1st element in rblock and search the first on the 2nd half where to rotate into
     // swap rblock with left until they can be merged
     // [ lblock ] [ rblock ] [ left ] [ right ]
-    left := mono_bound_binary_first(arr[lblock + rblock:], greater, arr[lblock])
-
+    // left := mono_bound_binary_first(arr[lblock + rblock:], greater, arr[lblock])
+    left, _ := bin_search(arr[lblock + rblock:], arr[lblock])
 
     right := len(arr) - left - rblock - lblock 
     if left > 0 {

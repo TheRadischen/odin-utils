@@ -12,12 +12,24 @@ import "core:sort"
 
 
 
-SIZE :: 100_000
+SIZE :: 1000_000
+ITER :: 100
+
 main :: proc(){
+
 	arr := make([]int, SIZE)
 	data := make([]Data, SIZE)
-	ITER :: 100
+	data_soa := make(#soa[]Data, SIZE)
 	times : [ITER]time.Duration
+
+	{
+		ran(data_soa)
+		start := time.tick_now()
+		sort_inlined_by_soa(data_soa, less_soa)
+		time := time.tick_since(start)
+		fmt.println(time)
+
+	}
 	fmt.println("sorting 100_000 elements; Iterations", ITER)
 	fmt.println("fastest time | 25% time | 50% time | function name")
 
@@ -29,19 +41,20 @@ main :: proc(){
 		start := time.tick_now()
 		sort_inlined(arr)
 		times[i] = time.tick_since(start)
-		if !is_sorted(arr) {panic("did not sort")}
+		if !is_sorted(arr) {fmt.println(arr[:min(28,SIZE)]);panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_inlined", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
 		ran(arr)
 		start := time.tick_now()
-		sort_stable(arr)
+		sort_stable(arr, context.temp_allocator)
 		times[i] = time.tick_since(start)
-		if !is_sorted(arr) {panic("did not sort")}
+		if !is_sorted(arr) {fmt.println(arr[len(arr)-100:]);panic("did not sort")}
+		free_all(context.temp_allocator)
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
@@ -51,7 +64,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted(arr) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_stack", times[0], times[ITER / 4], times[ITER / 2])
 
 	for i in 0..<ITER {
@@ -61,7 +74,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted(arr) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  slice.sort", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
@@ -71,11 +84,59 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted(arr) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  radix", times[0], times[ITER / 4], times[ITER / 2])
+
+	fmt.println()
+	fmt.println("ascending []int")
+
+	for i in 0..<ITER {
+		start := time.tick_now()
+		sort_inlined_by(arr, less_int)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {fmt.println(arr[:min(28,SIZE)]);panic("did not sort")}
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  sort_inlined", times[0], times[ITER / 4], times[ITER / 2])
+	
+	for i in 0..<ITER {
+		start := time.tick_now()
+		sort_stable(arr)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {panic("did not sort")}
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  sort_stable", times[0], times[ITER / 4], times[ITER / 2])
+	
+	for i in 0..<ITER {
+		start := time.tick_now()
+		sort_stable_stack_by(arr, less_int)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {panic("did not sort")}
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_stack", times[0], times[ITER / 4], times[ITER / 2])
+
+	for i in 0..<ITER {
+		start := time.tick_now()
+		slice.sort_by(arr, less_int)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {panic("did not sort")}
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  slice.sort", times[0], times[ITER / 4], times[ITER / 2])
+	
+	for i in 0..<ITER {
+		start := time.tick_now()
+		radix(arr)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {panic("did not sort")}
+	}
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  radix", times[0], times[ITER / 4], times[ITER / 2])
 
 	fmt.printfln("")
-	fmt.println("random []Data by less")
+	fmt.println("random []Data by less | size of Data: ", size_of(Data))
 	for i in 0..<ITER {
 		ran(data)
 		start := time.tick_now()
@@ -83,7 +144,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_inlined_by", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
@@ -93,7 +154,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_by", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
@@ -103,7 +164,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_stack_by", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
@@ -113,7 +174,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  slice.sort_by", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
@@ -123,7 +184,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  radix_by", times[0], times[ITER / 4], times[ITER / 2])
 
 	fmt.printfln("")
@@ -136,7 +197,7 @@ main :: proc(){
 		delete(ind)
 		if !is_sorted(arr) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_inlined_with_indices", times[0], times[ITER / 4], times[ITER / 2])
 
 	for i in 0..<ITER {
@@ -147,7 +208,7 @@ main :: proc(){
 		delete(ind)
 		if !is_sorted(arr) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_with_indices", times[0], times[ITER / 4], times[ITER / 2])
 
 	for i in 0..<ITER {
@@ -158,7 +219,7 @@ main :: proc(){
 		delete(ind)
 		if !is_sorted(arr) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_stack_with_indices", times[0], times[ITER / 4], times[ITER / 2])
 
 	for i in 0..<ITER {
@@ -169,7 +230,7 @@ main :: proc(){
 		delete(ind)
 		if !is_sorted(arr) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  slice.sort_with_indices", times[0], times[ITER / 4], times[ITER / 2])
 
 	fmt.printfln("")
@@ -182,7 +243,7 @@ main :: proc(){
 		delete(ind)
 		if !is_sorted(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_inlined_by_with_indices", times[0], times[ITER / 4], times[ITER / 2])
 
 	for i in 0..<ITER {
@@ -193,7 +254,7 @@ main :: proc(){
 		delete(ind)
 		if !is_sorted(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_by_with_indices", times[0], times[ITER / 4], times[ITER / 2])
 
 	for i in 0..<ITER {
@@ -204,7 +265,7 @@ main :: proc(){
 		delete(ind)
 		if !is_sorted(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_stack_by_with_indices", times[0], times[ITER / 4], times[ITER / 2])
 
 	for i in 0..<ITER {
@@ -215,7 +276,7 @@ main :: proc(){
 		free_all(context.temp_allocator)
 		if !is_sorted(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  slice.sort_by_with_indices", times[0], times[ITER / 4], times[ITER / 2])
 
 	fmt.printfln("")
@@ -227,7 +288,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted_mod(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_inlined_by_with_data", times[0], times[ITER / 4], times[ITER / 2])
 
 	for i in 0..<ITER {
@@ -237,7 +298,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted_mod(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_by_with_data", times[0], times[ITER / 4], times[ITER / 2])
 
 	for i in 0..<ITER {
@@ -247,7 +308,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted_mod(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_stack_by_with_data", times[0], times[ITER / 4], times[ITER / 2])
 
 	for i in 0..<ITER {
@@ -257,7 +318,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted_mod(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  slice.sort_by_with_data", times[0], times[ITER / 4], times[ITER / 2])
 
 	fmt.printfln("")
@@ -270,7 +331,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted_mod(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_inlined_by_with_indices_with_data", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
@@ -281,7 +342,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted_mod(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_by_with_indices_with_data", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
@@ -292,7 +353,7 @@ main :: proc(){
 		times[i] = time.tick_since(start)
 		if !is_sorted_mod(data) {panic("did not sort")}
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_stack_by_with_indices_with_data", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
@@ -302,21 +363,20 @@ main :: proc(){
 		delete(ind)
 		times[i] = time.tick_since(start)
 		if !is_sorted_mod(data) {panic("did not sort")}
+		
 	}
-	sort_inlined(times[:])
+	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  slice.sort_by_with_indices_with_data", times[0], times[ITER / 4], times[ITER / 2])
 	
-	// fmt.printfln("%v  |  %v  |  %v  |  ")
-	// fmt.printfln("%v  |  %v  |  %v  |  random []Data by cmp")
-	// for i in 0..<ITER {
-	// 	ran(data)
-	// 	start := time.tick_now()
-	// 	sort_stable_stack_by_cmp(data, cmp_data)
-	// 	times[i] = time.tick_since(start)
-	// 	if !is_sorted(data) {panic("did not sort")}
-	// }
-	// sort_inlined(times[:])
-	// fmt.printfln("%v  |  %v  |  %v  |  sort_stable_stack_by_with_data", times[0], times[ITER / 4], times[ITER / 2])
+	for i in 0..<ITER {
+		ran(data)
+		start := time.tick_now()
+		sort_stable_stack_by_cmp(data, cmp_data)
+		times[i] = time.tick_since(start)
+		if !is_sorted(data) {panic("did not sort")}
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_stack_by_with_data", times[0], times[ITER / 4], times[ITER / 2])
 
 }
 
@@ -326,8 +386,15 @@ Data :: struct {
 	data:[20]int,
 }
 
-less_int :: proc(l,r:int)->bool{return l < r}
-less_data :: proc(l,r:Data)->bool{return l.rand < r.rand}
+comps := 0
+less_int :: #force_inline  proc(l,r:int)->bool{return l < r}
+less_data :: #force_inline proc(l,r:Data)->bool{return l.rand < r.rand}
+cmp_data :: #force_inline  proc(l,r:Data)->Ordering{
+	if l.rand < r.rand {return .Less}
+	if l.rand > r.rand {return .Greater}
+	return .Equal
+}
+less_soa :: #force_inline  proc(l, r: Data) -> bool { return l.rand < r.rand }
 modulus := []int{5,4,6,7,3,2,1,8,9,0}
 less_data_modulus :: proc(l,r:Data, mod: ^[]int)->bool{
 	left := l.rand %% 10
@@ -341,13 +408,24 @@ less_data_modulus_raw :: proc(l,r:Data, user_data: rawptr)->bool{
 	return mod[left] < mod[right]
 }
 
-ran :: proc{rand_arr, rand_data}
+ran :: proc{rand_arr, rand_data, rand_soa,rand_data_soa}
 rand_arr :: proc(arr: []int) {
 	for &a in arr {
 		a = len(arr) / 2 - rand.int_max(len(arr))
 	}
 }
+rand_soa :: proc(arr: #soa[][$N]int) {
+	for &a in arr {
+		a.x = len(arr) / 2 - rand.int_max(len(arr))
+	}
+}
 rand_data :: proc(arr: []Data) {
+	for &a,i in arr {
+		a.rand = len(arr) / 2 - rand.int_max(len(arr))
+		a.index = i
+	}
+}
+rand_data_soa :: proc(arr: #soa[]Data) {
 	for &a,i in arr {
 		a.rand = len(arr) / 2 - rand.int_max(len(arr))
 		a.index = i
