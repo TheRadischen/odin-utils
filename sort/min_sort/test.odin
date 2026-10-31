@@ -12,7 +12,7 @@ import "core:sort"
 
 
 
-SIZE :: 1000_000
+SIZE :: 100_000
 ITER :: 100
 
 main :: proc(){
@@ -22,14 +22,14 @@ main :: proc(){
 	data_soa := make(#soa[]Data, SIZE)
 	times : [ITER]time.Duration
 
-	{
-		ran(data_soa)
-		start := time.tick_now()
-		sort_inlined_by_soa(data_soa, less_soa)
-		time := time.tick_since(start)
-		fmt.println(time)
-
-	}
+	// {
+	// 	for &a, i in arr {a = i % 1000}
+	// 	start := time.tick_now()
+	// 	piposort(arr, less_int)
+	// 	time := time.tick_since(start)
+	// 	fmt.println(time)
+	// 	return
+	// }
 	fmt.println("sorting 100_000 elements; Iterations", ITER)
 	fmt.println("fastest time | 25% time | 50% time | function name")
 
@@ -56,6 +56,17 @@ main :: proc(){
 	}
 	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable", times[0], times[ITER / 4], times[ITER / 2])
+	
+	for i in 0..<ITER {
+		ran(arr)
+		start := time.tick_now()
+		piposort(arr, less_int, context.temp_allocator)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {fmt.println(arr[len(arr)-100:]);panic("did not sort")}
+		free_all(context.temp_allocator)
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  piposort", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
 		ran(arr)
@@ -110,6 +121,16 @@ main :: proc(){
 	
 	for i in 0..<ITER {
 		start := time.tick_now()
+		piposort(arr, less_int, context.temp_allocator)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {panic("did not sort")}
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  piposort", times[0], times[ITER / 4], times[ITER / 2])
+		free_all(context.temp_allocator)
+	
+	for i in 0..<ITER {
+		start := time.tick_now()
 		sort_stable_stack_by(arr, less_int)
 		times[i] = time.tick_since(start)
 		if !is_sorted(arr) {panic("did not sort")}
@@ -134,6 +155,61 @@ main :: proc(){
 	}
 	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  radix", times[0], times[ITER / 4], times[ITER / 2])
+
+	fmt.println()
+	fmt.println("i % 1000 []int")
+
+	for i in 0..<ITER {
+		for &a, i in arr { a = i % 1000 }
+		start := time.tick_now()
+		sort_inlined_by(arr, less_int)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {fmt.println(arr[:min(28,SIZE)]);panic("did not sort")}
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  sort_inlined", times[0], times[ITER / 4], times[ITER / 2])
+	
+	for i in 0..<ITER {
+		for &a, i in arr { a = i % 1000 }
+		start := time.tick_now()
+		sort_stable(arr)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {panic("did not sort")}
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  sort_stable", times[0], times[ITER / 4], times[ITER / 2])
+	
+	for i in 0..<ITER {
+		for &a, i in arr { a = i % 1000 }
+		start := time.tick_now()
+		piposort(arr, less_int, context.temp_allocator)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {panic("did not sort")}
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  piposort", times[0], times[ITER / 4], times[ITER / 2])
+		free_all(context.temp_allocator)
+	
+	for i in 0..<ITER {
+		for &a, i in arr { a = i % 1000 }
+		start := time.tick_now()
+		sort_stable_stack_by(arr, less_int)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {panic("did not sort")}
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_stack", times[0], times[ITER / 4], times[ITER / 2])
+
+	for i in 0..<ITER {
+		for &a, i in arr { a = i % 1000 }
+		start := time.tick_now()
+		slice.sort_by(arr, less_int)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {panic("did not sort")}
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  slice.sort", times[0], times[ITER / 4], times[ITER / 2])
+	
 
 	fmt.printfln("")
 	fmt.println("random []Data by less | size of Data: ", size_of(Data))
@@ -397,14 +473,14 @@ cmp_data :: #force_inline  proc(l,r:Data)->Ordering{
 less_soa :: #force_inline  proc(l, r: Data) -> bool { return l.rand < r.rand }
 modulus := []int{5,4,6,7,3,2,1,8,9,0}
 less_data_modulus :: proc(l,r:Data, mod: ^[]int)->bool{
-	left := l.rand %% 10
-	right := r.rand %% 10
+	left := l.rand %% 1000
+	right := r.rand %% 1000
 	return mod[left] < mod[right]
 }
 less_data_modulus_raw :: proc(l,r:Data, user_data: rawptr)->bool{
 	mod := (^[]int)(user_data)
-	left := l.rand %% 10
-	right := r.rand %% 10
+	left := l.rand %% 1000
+	right := r.rand %% 1000
 	return mod[left] < mod[right]
 }
 

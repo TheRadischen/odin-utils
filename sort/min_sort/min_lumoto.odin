@@ -256,12 +256,14 @@ sort_from_permutation_indices :: proc(data: $T/[]$E, indices: []int) {
 @private
 _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
 	loop(arr, data, true, 0)
+
+	SMALL_THRESHOLD  :: 28
 	
 	loop :: proc(arr: T, data: D, leftmost: bool, unbalanced: int) #no_bounds_check {
 		arr := arr; leftmost := leftmost; unbalanced := unbalanced
 
 		for {
-			if len(arr) <= 28 {
+			if len(arr) <= SMALL_THRESHOLD {
 				when size_of(E) > 100 {
 					shell_sort(arr, data)
 				} else {

@@ -12,7 +12,7 @@ import "core:sort"
 
 
 
-SIZE :: 1000_000
+SIZE :: 100_000
 ITER :: 100
 
 main :: proc(){
@@ -47,6 +47,27 @@ main :: proc(){
 	}
 	slice.sort(times[:])
 	fmt.printfln("%v  |  %v  |  %v  |  quadsort", times[0], times[ITER / 4], times[ITER / 2])
+	
+	for i in 0..<ITER {
+		start := time.tick_now()
+		quadsort(arr, greater_int, context.temp_allocator)
+		times[i] = time.tick_since(start)
+		if !slice.is_sorted(arr) {fmt.println(arr[len(arr)-100:]);panic("did not sort")}
+		free_all(context.temp_allocator)
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  quadsort pre sorted", times[0], times[ITER / 4], times[ITER / 2])
+	
+	for i in 0..<ITER {
+		for &a, i in arr { a = i % 1000 }
+		start := time.tick_now()
+		quadsort(arr, greater_int, context.temp_allocator)
+		times[i] = time.tick_since(start)
+		if !slice.is_sorted(arr) {fmt.println(arr[len(arr)-100:]);panic("did not sort")}
+		free_all(context.temp_allocator)
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  quadsort pre sorted % 100", times[0], times[ITER / 4], times[ITER / 2])
 	
 
 }
