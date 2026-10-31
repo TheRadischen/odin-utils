@@ -558,8 +558,3 @@ _quick_lomuto :: proc(arr: $T/[]$E, data: $D, $LESS: $P) #no_bounds_check {
 		return ptr^
 	}
 }
-
-
-
-
-

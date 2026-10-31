@@ -220,7 +220,6 @@ sort_stable_by_cmp_with_data :: proc(arr: $T/[]$E, $CMP: proc(l, r: E, user_data
 }
 
 
-SMALL_THRESHOLD :: 28 * 4 * 4 * 4
 
 mini_flux :: proc(arr: $A/[]$T, data: $D, $LESS: $P, allocator := context.allocator) {
 	if len(arr) <= SMALL_THRESHOLD && size_of(T) <= 40 {
@@ -228,6 +227,7 @@ mini_flux :: proc(arr: $A/[]$T, data: $D, $LESS: $P, allocator := context.alloca
 		pingpong(arr, swap[:], data)
 		return
 	}
+	SMALL_THRESHOLD :: 28 * 4 * 4
 
 	swap := make(A, len(arr), allocator)
 	loop(arr, swap, arr, data, nil, 0)

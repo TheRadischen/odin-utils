@@ -13,25 +13,59 @@ import "core:sort"
 
 
 SIZE :: 100_000
-ITER :: 100
+ITER :: 20
 
 main :: proc(){
 
 	arr := make([]int, SIZE)
+	arr32 := make([]i32, SIZE)
 	data := make([]Data, SIZE)
 	data_soa := make(#soa[]Data, SIZE)
 	times : [ITER]time.Duration
 
-	// {
-	// 	for &a, i in arr {a = i % 1000}
-	// 	start := time.tick_now()
-	// 	piposort(arr, less_int)
-	// 	time := time.tick_since(start)
-	// 	fmt.println(time)
-	// 	return
-	// }
+	for i := 10; i <= 1_000_000; i *= 10 {
+		sort_sizes(i)
+	}
+	sort_sizes :: proc(size: int) {
+		arr := make([]int, size)
+		defer delete(arr)
+		iter := 1_000_000 / size 
+		min_time : time.Duration = time.MAX_DURATION
+		for i in 0..<clamp(iter, 1, 10_000) {
+			ran(arr)
+			start := time.tick_now()
+			sort_inlined(arr)
+			dur := time.tick_since(start)
+			min_time = min(min_time, dur)
+		}
+		// fmt.println("size:",size,"time:",min_time)
+		min_time2 : time.Duration = time.MAX_DURATION
+		for i in 0..<clamp(iter / 10, 1, 10_000) {
+			ran(arr)
+			start := time.tick_now()
+			slice.sort(arr)
+			dur := time.tick_since(start)
+			min_time2 = min(min_time2, dur)
+		}
+		// fmt.println("size:",size,"time:",min_time2)
+		fmt.println("size: ",size," slice.sort / sort_inlined: ", f64(min_time2) / f64(min_time))
+	}
+
 	fmt.println("sorting 100_000 elements; Iterations", ITER)
 	fmt.println("fastest time | 25% time | 50% time | function name")
+
+	fmt.println()
+	fmt.println("random []i32")
+
+	for i in 0..<ITER {
+		ran(arr32)
+		start := time.tick_now()
+		sort_inlined(arr32)
+		times[i] = time.tick_since(start)
+		if !is_sorted(arr) {fmt.println(arr[:min(28,SIZE)]);panic("did not sort")}
+	}
+	slice.sort(times[:])
+	fmt.printfln("%v  |  %v  |  %v  |  sort_inlined", times[0], times[ITER / 4], times[ITER / 2])
 
 	fmt.println()
 	fmt.println("random []int")
@@ -484,10 +518,15 @@ less_data_modulus_raw :: proc(l,r:Data, user_data: rawptr)->bool{
 	return mod[left] < mod[right]
 }
 
-ran :: proc{rand_arr, rand_data, rand_soa,rand_data_soa}
+ran :: proc{rand_arr, rand_data, rand_soa,rand_data_soa,rand_arr32}
 rand_arr :: proc(arr: []int) {
 	for &a in arr {
 		a = len(arr) / 2 - rand.int_max(len(arr))
+	}
+}
+rand_arr32 :: proc(arr: []i32) {
+	for &a in arr {
+		a = i32(len(arr) / 2 - rand.int_max(len(arr)))
 	}
 }
 rand_soa :: proc(arr: #soa[][$N]int) {
