@@ -24,14 +24,11 @@ Sorts
 | min_blit | no* | yes | *only allocates stack memory (unless sorting with indices) |
 | radix | yes | yes | only works for numeric types (can sort int and float correctly) |
 
-min_flux and min_blit have a version that can also sort #soa
+they have a version that can also sort #soa
 
 Benchmark
 ---
-min_lumoto is almost as fast as rust unstable sort
-100_000 random int; best of 100 iterations
-min_lumoto: 1.6 ms
-rust unstable: 1.4 ms
+
 
 
 ```

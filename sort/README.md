@@ -1,35 +1,26 @@
-# odin-utils
+# sorts
 
 
 blitsort
 ---
-a stable, stack based quick/merge sort both for soa and aos
+a stable, stack based quick/merge sort
 
-it compiles to 25kb with o:speed
 
 quadsort
 ---
-a stable, adaptive merge sort both for soa and aos
+a stable, adaptive merge sort
 
 
-small sorts
----
-if you need something smaller goto min_sort
-
-speed comparable to modern sorts such as rust std::sort
+# min_sort
 
 
 min_lumoto: unstable, max 2800 byte extra stack space
-
+---
 min_flux: stable, allocates N extra memory
-
+---
 min_blit: stable, allocates [512]T stack space
+---
 
 
-they implement most of odins interface, such as 
+10x the speed of slice.sort
 
-sort, sort_by, sort_by_with_intedies, sort_by_with_data ...
-
-at 10x the speed of slice.sort
-
-downside: they generate new bytecode each call, so use sparingly or your executable will bloat
