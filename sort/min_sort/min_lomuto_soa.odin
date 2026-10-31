@@ -48,7 +48,7 @@ This sort is not guaranteed to be stable
 	}
 */
 sort_inlined_by_with_indices_soa :: proc(arr: $T/#soa[]$E, $LESS: proc(l, r: E) -> bool, allocator := context.allocator) -> (indices: []int) {
-	indices = make([]int, len(arr), allocator)
+	indices = non_zero_make([]int, len(arr), allocator)
 
 	when size_of(E) != 0 {
 		if len(arr) > 1 {
@@ -114,7 +114,7 @@ This sort is not guaranteed to be stable
 	}
 */
 sort_inlined_by_with_indices_with_data_soa :: proc(arr: $T/#soa[]$E, $LESS: proc(l, r: E, user_data: ^$D) -> bool, user_data: ^D, allocator := context.allocator) -> (indices: []int) {
-	indices = make([]int, len(arr), allocator)
+	indices = non_zero_make([]int, len(arr), allocator)
 	
 	when size_of(E) != 0 {
 		if len(arr) > 1 {

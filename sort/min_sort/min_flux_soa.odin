@@ -55,7 +55,7 @@ This sort is stable
 	}
 */
 sort_stable_by_with_indices_soa :: proc(arr: $T/#soa[]$E, $LESS: proc(l, r: E) -> bool, allocator := context.allocator) -> (indices: []int) {
-	indices = make([]int, len(arr), allocator)
+	indices = non_zero_make([]int, len(arr), allocator)
 
 	when size_of(E) != 0 {
 		if len(arr) > 1 {
@@ -122,7 +122,7 @@ This sort is stable
 	}
 */
 sort_stable_by_with_indices_with_data_soa :: proc(arr: $T/#soa[]$E, $LESS: proc(l, r: E, user_data: ^$D) -> bool, user_data: ^D, allocator := context.allocator) -> (indices: []int) {
-	indices = make([]int, len(arr), allocator)
+	indices = non_zero_make([]int, len(arr), allocator)
 	when size_of(E) != 0 {
 		if len(arr) > 1 {
 			for &index, i in indices{
@@ -180,7 +180,7 @@ mini_flux_soa :: proc(arr: $A/#soa[]$T, data: $D, $LESS: $P, allocator := contex
 	}
 	SMALL_THRESHOLD :: 28 * 4 * 4
 
-	swap := make(A, len(arr), allocator)
+	swap := non_zero_make(A, len(arr), allocator)
 	loop(arr, swap, arr, data, nil, 0)
 	delete(swap, allocator)
 

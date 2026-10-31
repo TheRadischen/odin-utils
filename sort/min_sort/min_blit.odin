@@ -47,7 +47,7 @@ This sort is stable
 	example :: proc() {
 		Data :: struct { rand: int, data: int }
 		data_less :: proc(l, r: Data) -> bool { return l.rand < r.rand }
-		arr := make([]Data, 10)
+		arr := non_zero_make([]Data, 10)
 		// fill with data
 		sort.sort_stable_stack_by(arr, data_less)
 	}
@@ -73,7 +73,7 @@ This sort is stable
 	}
 */
 sort_stable_stack_with_indices :: proc(arr: $T/[]$E, allocator := context.allocator) -> (indices: []int) where ORD(E) {
-	indices = make([]int, len(arr), allocator)
+	indices = non_zero_make([]int, len(arr), allocator)
 	when size_of(E) != 0 {
 		if len(arr) > 1 {
 			for &index, i in indices{
@@ -100,14 +100,14 @@ This sort is stable
 	example :: proc() {
 		Data :: struct { rand: int, data: [10]int }
 		data_less :: proc(l, r: Data) -> bool { return l.rand < r.rand }
-		arr := make([]Data, 10)
+		arr := non_zero_make([]Data, 10)
 		// fill with data
 		sort.sort_stable_stack_by_with_indices(arr, data_less, context.temp_allocator)
 		free_all(context.temp_allocator)
 	}
 */
 sort_stable_stack_by_with_indices :: proc(arr: $T/[]$E, $LESS: proc(l, r: E) -> bool, allocator := context.allocator) -> (indices: []int) {
-	indices = make([]int, len(arr), allocator)
+	indices = non_zero_make([]int, len(arr), allocator)
 
 	when size_of(E) != 0 {
 		if len(arr) > 1 {
@@ -139,7 +139,7 @@ This sort is stable
 			right := r.rand %% 10
 			return mod[left] < mod[right]
 		}
-		arr := make([]Data, 10)
+		arr := non_zero_make([]Data, 10)
 		// fill with data
 		sort.sort_stable_stack_by_with_data(data, less_data_modulus, &modulus)
 	}
@@ -167,14 +167,14 @@ This sort is stable
 			right := r.rand %% 10
 			return mod[left] < mod[right]
 		}
-		arr := make([]Data, 10)
+		arr := non_zero_make([]Data, 10)
 		// fill with data
 		indices := sort.sort_stable_stack_by_with_indices_with_data(data, less_data_modulus, &modulus)
 		defer delete(indices)
 	}
 */
 sort_stable_stack_by_with_indices_with_data :: proc(arr: $T/[]$E, $LESS: proc(l, r: E, user_data: ^$D) -> bool, user_data: ^D, allocator := context.allocator) -> (indices: []int) {
-	indices = make([]int, len(arr), allocator)
+	indices = non_zero_make([]int, len(arr), allocator)
 	when size_of(E) != 0 {
 		if len(arr) > 1 {
 			for &index, i in indices{

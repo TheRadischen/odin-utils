@@ -40,7 +40,7 @@ radix_unsigned :: proc(data: []$T, $key: proc(T)->$K, allocator := context.alloc
 	SIZE :: size_of(K)
 	arr := data
 	counts : [SIZE][BASE]i32
-	swap := make([]T, len(arr), allocator)
+	swap := non_zero_make([]T, len(arr), allocator)
 	defer delete(swap, allocator)
 
 	// count 
@@ -96,7 +96,7 @@ radix_integer :: proc(data: []$T, $key: proc(T)->$K, allocator := context.alloca
 	SIZE :: size_of(K) - 1
 	arr := data
 	counts : [SIZE + 1][BASE]i32
-	swap := make([]T, len(arr), allocator)
+	swap := non_zero_make([]T, len(arr), allocator)
 	defer delete(swap, allocator)
 
 	// count 
@@ -175,7 +175,7 @@ radix_float :: proc(data: []$T, $key: proc(T)->$K, allocator := context.allocato
 	
 	counts : [SIZE][BASE]i32
 	last : [BASE]i32
-	swap := make([]T, len(arr), allocator)
+	swap := non_zero_make([]T, len(arr), allocator)
 	defer delete(swap, allocator)
 
 	// count 

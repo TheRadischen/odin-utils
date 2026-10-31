@@ -6,7 +6,7 @@ import "base:intrinsics"
 
 piposort :: proc(arr: $A, $cmp: $P, allocator := context.allocator) {
 	CONST_SORT :: 28
-	swap := make(A, len(arr), allocator)
+	swap := non_zero_make(A, len(arr), allocator)
 	ping_pong(arr, swap)
 	delete(swap, allocator)
 	

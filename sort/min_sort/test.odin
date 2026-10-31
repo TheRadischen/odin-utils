@@ -13,7 +13,7 @@ import "core:sort"
 
 
 SIZE :: 100_000
-ITER :: 20
+ITER :: 100
 
 main :: proc(){
 
@@ -191,10 +191,10 @@ main :: proc(){
 	fmt.printfln("%v  |  %v  |  %v  |  radix", times[0], times[ITER / 4], times[ITER / 2])
 
 	fmt.println()
-	fmt.println("i % 1000 []int")
+	fmt.println("i % 100 []int")
 
 	for i in 0..<ITER {
-		for &a, i in arr { a = i % 1000 }
+		for &a, i in arr { a = i % 100 }
 		start := time.tick_now()
 		sort_inlined_by(arr, less_int)
 		times[i] = time.tick_since(start)
@@ -204,7 +204,7 @@ main :: proc(){
 	fmt.printfln("%v  |  %v  |  %v  |  sort_inlined", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
-		for &a, i in arr { a = i % 1000 }
+		for &a, i in arr { a = i % 100 }
 		start := time.tick_now()
 		sort_stable(arr)
 		times[i] = time.tick_since(start)
@@ -214,7 +214,7 @@ main :: proc(){
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable", times[0], times[ITER / 4], times[ITER / 2])
 	
 	for i in 0..<ITER {
-		for &a, i in arr { a = i % 1000 }
+		for &a, i in arr { a = i % 100 }
 		start := time.tick_now()
 		piposort(arr, less_int, context.temp_allocator)
 		times[i] = time.tick_since(start)
@@ -225,7 +225,7 @@ main :: proc(){
 		free_all(context.temp_allocator)
 	
 	for i in 0..<ITER {
-		for &a, i in arr { a = i % 1000 }
+		for &a, i in arr { a = i % 100 }
 		start := time.tick_now()
 		sort_stable_stack_by(arr, less_int)
 		times[i] = time.tick_since(start)
@@ -235,7 +235,7 @@ main :: proc(){
 	fmt.printfln("%v  |  %v  |  %v  |  sort_stable_stack", times[0], times[ITER / 4], times[ITER / 2])
 
 	for i in 0..<ITER {
-		for &a, i in arr { a = i % 1000 }
+		for &a, i in arr { a = i % 100 }
 		start := time.tick_now()
 		slice.sort_by(arr, less_int)
 		times[i] = time.tick_since(start)
@@ -507,23 +507,49 @@ cmp_data :: #force_inline  proc(l,r:Data)->Ordering{
 less_soa :: #force_inline  proc(l, r: Data) -> bool { return l.rand < r.rand }
 modulus := []int{5,4,6,7,3,2,1,8,9,0}
 less_data_modulus :: proc(l,r:Data, mod: ^[]int)->bool{
-	left := l.rand %% 1000
-	right := r.rand %% 1000
+	left := l.rand %% 100
+	right := r.rand %% 100
 	return mod[left] < mod[right]
 }
 less_data_modulus_raw :: proc(l,r:Data, user_data: rawptr)->bool{
 	mod := (^[]int)(user_data)
-	left := l.rand %% 1000
-	right := r.rand %% 1000
+	left := l.rand %% 100
+	right := r.rand %% 100
 	return mod[left] < mod[right]
 }
 
 ran :: proc{rand_arr, rand_data, rand_soa,rand_data_soa,rand_arr32}
 rand_arr :: proc(arr: []int) {
 	for &a in arr {
-		a = len(arr) / 2 - rand.int_max(len(arr))
+		// a = len(arr) / 2 - rand.int_max(len(arr))
+		a = next_rng(&seed)
 	}
 }
+seed := 1000
+next_rng :: proc(seed: ^int) -> int {
+	seed^ ~= seed^ << 13
+	seed^ ~= seed^ >> 7
+	seed^ ~= seed^ << 17
+	return seed^ %% SIZE
+}
+/*
+impl SimpleRng {
+    fn new(seed: u64) -> Self {
+        Self { state: seed }
+    }
+
+    fn next_u64(&mut self) -> u64 {
+        self.state ^= self.state << 13;
+        self.state ^= self.state >> 7;
+        self.state ^= self.state << 17;
+        self.state
+    }
+
+    fn next_usize(&mut self, max: usize) -> usize {
+        (self.next_u64() as usize) % max
+    }
+}
+*/
 rand_arr32 :: proc(arr: []i32) {
 	for &a in arr {
 		a = i32(len(arr) / 2 - rand.int_max(len(arr)))
