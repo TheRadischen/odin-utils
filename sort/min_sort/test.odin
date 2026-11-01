@@ -12,8 +12,8 @@ import "core:sort"
 
 
 
-SIZE :: 100_000
-ITER :: 100
+SIZE :: 10_000_000
+ITER :: 2
 
 main :: proc(){
 
@@ -22,6 +22,19 @@ main :: proc(){
 	data := make([]Data, SIZE)
 	data_soa := make(#soa[]Data, SIZE)
 	times : [ITER]time.Duration
+	
+	
+	// for i in 0..<ITER {
+	// 	ran(arr)
+	// 	start := time.tick_now()
+	// 	sort_stable_stack(arr)
+	// 	times[i] = time.tick_since(start)
+	// 	if !is_sorted(arr) {fmt.println(arr);panic("did not sort")}
+	// }
+	// slice.sort(times[:])
+	// fmt.printfln("%v  |  %v  |  %v  |  sort_stable_stack", times[0], times[ITER / 4], times[ITER / 2])
+
+	// {return}
 
 	for i := 10; i <= 1_000_000; i *= 10 {
 		sort_sizes(i)
@@ -521,8 +534,8 @@ less_data_modulus_raw :: proc(l,r:Data, user_data: rawptr)->bool{
 ran :: proc{rand_arr, rand_data, rand_soa,rand_data_soa,rand_arr32}
 rand_arr :: proc(arr: []int) {
 	for &a in arr {
-		// a = len(arr) / 2 - rand.int_max(len(arr))
-		a = next_rng(&seed)
+		a = len(arr) / 2 - rand.int_max(len(arr))
+		// a = next_rng(&seed)
 	}
 }
 seed := 1000

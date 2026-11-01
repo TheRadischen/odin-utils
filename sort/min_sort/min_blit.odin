@@ -1,3 +1,4 @@
+
 package msort
 
 import "base:runtime"
@@ -324,7 +325,6 @@ mini_blit :: proc(arr: $A/[]$T, data: $D, $LESS: $P) {
 		}
 
 		intrinsics.mem_copy_non_overlapping(&arr[less],&swap[0], (len(arr) - less) * size_of(T))
-		
 		return less
 	}
 
@@ -523,6 +523,7 @@ mini_blit :: proc(arr: $A/[]$T, data: $D, $LESS: $P) {
 		defer ptr^ -= 1
 		return ptr^
 	}
+
 	rotate_left :: proc "contextless" (array: $T/[]$E, mid: int) {
 		if len(array) == 0 {
 			return

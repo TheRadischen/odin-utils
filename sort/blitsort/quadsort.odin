@@ -981,7 +981,7 @@ nn :: #force_inline proc(arr: $A, pointer: ^int, $T: typeid) -> T #no_bounds_che
 }
 /*
 functionally the same as any other rotate like slice.rotate() but slightly faster
-// TODO: test on bigger types, bill is sneaky
+// TODO: test on bigger types
 */
 trinity_rotation :: proc(arr, swap: $A, left: int){
     bridge : int
