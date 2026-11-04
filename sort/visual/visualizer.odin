@@ -35,9 +35,10 @@ pause, backward : bool = false, false
 selected_sort: Sorts
 selected_shuffle: Shuffles
 selected_input: Inputs
+selected_merge : Merges
 selected_action: Action_Type = .Cmp
 edit_input, edit_mod, edit_speed : bool
-drop_sort, drop_shuffle, drop_input, drop_action: bool
+drop_sort, drop_shuffle, drop_input, drop_action, drop_merge: bool
 is_drop_selected :: proc() -> bool {
 	return drop_sort || drop_shuffle || drop_input || drop_action
 }
@@ -47,17 +48,6 @@ sorting_counter :f64= 0
 
 
 
-Inputs :: enum c.int {
-	Unique,
-	Max_Range,
-	Mod,
-}
-
-Shuffles :: enum c.int {
-	Random,
-	Ascending,
-	Descending,
-}
 
 
 MAX_SIZE :: 100_000
@@ -104,34 +94,61 @@ Source :: struct {
 	line: i32,
 }
 
-sort_names_rl, shuffle_names_rl, input_names_rl, action_names_rl: cstring
+sort_names_rl, shuffle_names_rl, input_names_rl, action_names_rl, merge_names_rl: cstring
 
-main :: proc(){
-	
+main :: proc() {
+
+	{
+		// swap := make([]int, 20)
+		// arr = make([]int, 20)
+		// for &a,i in arr {
+		// 	a = i % 10 + 0
+		// }
+		// defer delete(arr)
+		// defer delete(swap)
+
+		// merge_cross(swap, arr, 10, 10)
+		
+		// sorted := is_sorted_int(swap)
+		// fmt.println(sorted, arr, swap)
+		// return
+	}
 	rl.SetConfigFlags({.WINDOW_RESIZABLE, .VSYNC_HINT})
 	rl.InitWindow(INIT_WIDTH,INIT_HEIGHT,"Sorting")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(target_fps)
 	rl.GuiSetStyle(.DEFAULT, 16, 15) // fontsize
 
+	rl.InitAudioDevice()
+	defer rl.CloseAudioDevice()
+
+	
+	music := rl.LoadMusicStream("sweden.xm");
+	rl.PlayMusicStream(music);
+
 	target_ui = rl.LoadRenderTexture(INIT_WIDTH, INIT_HEIGHT)
 	target_arr = rl.LoadRenderTexture(INIT_WIDTH, INIT_HEIGHT - 200)
 
-	sort_names := reflect.enum_field_names(Sorts)
-	sort_names_joined := strings.join(sort_names, sep = ";", allocator = context.temp_allocator)
-	sort_names_rl = strings.clone_to_cstring(sort_names_joined)
+	// sort_names := reflect.enum_field_names(Sorts)
+	// sort_names_joined := strings.join(sort_names, sep = ";", allocator = context.temp_allocator)
+	// sort_names_rl = strings.clone_to_cstring(sort_names_joined)
 
-	shuffle_names := reflect.enum_field_names(Shuffles)
-	shuffle_names_joined := strings.join(shuffle_names, sep = ";", allocator = context.temp_allocator)
-	shuffle_names_rl = strings.clone_to_cstring(shuffle_names_joined)
+	// shuffle_names := reflect.enum_field_names(Shuffles)
+	// shuffle_names_joined := strings.join(shuffle_names, sep = ";", allocator = context.temp_allocator)
+	// shuffle_names_rl = strings.clone_to_cstring(shuffle_names_joined)
 
-	input_names := reflect.enum_field_names(Inputs)
-	input_names_joined := strings.join(input_names, sep = ";", allocator = context.temp_allocator)
-	input_names_rl = strings.clone_to_cstring(input_names_joined)
+	// input_names := reflect.enum_field_names(Inputs)
+	// input_names_joined := strings.join(input_names, sep = ";", allocator = context.temp_allocator)
+	// input_names_rl = strings.clone_to_cstring(input_names_joined)
 
-	action_names := reflect.enum_field_names(Action_Type)
-	action_names_joined := strings.join(action_names, sep = ";", allocator = context.temp_allocator)
-	action_names_rl = strings.clone_to_cstring(action_names_joined)
+	// action_names := reflect.enum_field_names(Action_Type)
+	// action_names_joined := strings.join(action_names, sep = ";", allocator = context.temp_allocator)
+	// action_names_rl = strings.clone_to_cstring(action_names_joined)
+	sort_names_rl = make_names_enum(Sorts)
+	shuffle_names_rl = make_names_enum(Shuffles)
+	input_names_rl = make_names_enum(Inputs)
+	merge_names_rl = make_names_enum(Merges)
+	action_names_rl = make_names_enum(Action_Type)
 	
 	backing_arr = make([]Data, MAX_SIZE)
 	backing_arr_swap = make([]Data, MAX_SIZE)
@@ -154,9 +171,13 @@ main :: proc(){
 
 	rl.ClearBackground(rl.BLACK)
 	for !rl.WindowShouldClose() {
+		// rl.UpdateMusicStream(music)
+		// rl.SetMusicPitch(music, pitch)
 		ui_update()
 	}
 }
+
+pitch : f32 = 1
 
 draw_arr :: proc(){
 	rl.BeginTextureMode(target_arr)
@@ -273,86 +294,90 @@ ui_update :: proc() {
 			draw_arr()
 		}
 
-		next_action :: proc(next: Action_Type) {
-			for {
-				type := next_frame()
-				fmt.println(type, next, type == next)
-				if type == nil || type == next {break}
+		// frames: {
+			next_action :: proc(next: Action_Type) {
+				for {
+					type := next_frame()
+					fmt.println(type, next, type == next)
+					if type == nil || type == next {break}
+				}
+				draw_arr()
 			}
-			draw_arr()
-		}
-		next_frame :: proc() -> (res: Action_Type = .Cmp) {
-			if action_index >= len(array_action) { return .None }
-			#partial switch a in array_action[action_index] {
-				case Cmp: {
-					data_arr[a.l][a.l_index].cmp_count += 1
-					data_arr[a.r][a.r_index].cmp_count += 1
-					data_arr[a.l][a.l_index].time_stamp = action_index
-					data_arr[a.r][a.r_index].time_stamp = action_index
-					res = .Cmp
-					entry, ok := &sorce_loc[{a.loc.procedure, a.loc.line}]
-					if !ok {
-						sorce_loc[{a.loc.procedure, a.loc.line}] = {1,int(a.less)}
-					} else {
-						entry.x += 1
-						entry.y += int(a.less)
+			next_frame :: proc() -> (res: Action_Type = .Cmp) {
+				if action_index >= len(array_action) { return .None }
+				#partial switch a in array_action[action_index] {
+					case Cmp: {
+						data_arr[a.l][a.l_index].cmp_count += 1
+						data_arr[a.r][a.r_index].cmp_count += 1
+						data_arr[a.l][a.l_index].time_stamp = action_index
+						data_arr[a.r][a.r_index].time_stamp = action_index
+						res = .Cmp
+						entry, ok := &sorce_loc[{a.loc.procedure, a.loc.line}]
+						if !ok {
+							sorce_loc[{a.loc.procedure, a.loc.line}] = {1,int(a.less)}
+						} else {
+							entry.x += 1
+							entry.y += int(a.less)
+						}
+						// fmt.println(a.less, a.loc.line)
 					}
-					// fmt.println(a.less, a.loc.line)
+					case Move: {
+						data_arr[a.to][a.to_index] = data_arr[a.from][a.from_index]
+						data_arr[a.from][a.from_index] = null_data
+						data_arr[a.to][a.to_index].move_count += 1
+						data_arr[a.to][a.to_index].time_stamp = action_index
+						res = .Move
+						pitch = f32(data_arr[a.to][a.to_index].value) / f32(max_value) * 3
+					}
+					case Swap: {
+						data_arr[a.l][a.li], data_arr[a.r][a.ri] = data_arr[a.r][a.ri], data_arr[a.l][a.li]
+						data_arr[a.l][a.li].move_count += 1
+						data_arr[a.r][a.ri].move_count += 1
+						data_arr[a.l][a.li].time_stamp = action_index
+						data_arr[a.r][a.ri].time_stamp = action_index
+						res = .Swap
+						pitch = f32(data_arr[a.l][a.li].value) / f32(max_value) * 3
+					}
+					case: {
+						panic("case not reachable")
+					}
 				}
-				case Move: {
-					data_arr[a.to][a.to_index] = data_arr[a.from][a.from_index]
-					data_arr[a.from][a.from_index] = null_data
-					data_arr[a.to][a.to_index].move_count += 1
-					data_arr[a.to][a.to_index].time_stamp = action_index
-					res = .Move
-				}
-				case Swap: {
-					data_arr[a.l][a.li], data_arr[a.r][a.ri] = data_arr[a.r][a.ri], data_arr[a.l][a.li]
-					data_arr[a.l][a.li].move_count += 1
-					data_arr[a.r][a.ri].move_count += 1
-					data_arr[a.l][a.li].time_stamp = action_index
-					data_arr[a.r][a.ri].time_stamp = action_index
-					res = .Swap
-				}
-				case: {
-					panic("case not reachable")
-				}
+				action_index += 1
+				return
 			}
-			action_index += 1
-			return
-		}
 
-		prev_action :: proc(prev: Action_Type) {
-			for {
-				type := prev_frame()
-				if type == prev || type == .None {break}
+			prev_action :: proc(prev: Action_Type) {
+				for {
+					type := prev_frame()
+					if type == prev || type == .None {break}
+				}
+				draw_arr()
 			}
-			draw_arr()
-		}
-		prev_frame :: proc() -> (res: Action_Type) {
-			if action_index == 0 { return .None }
-			action_index -= 1
-			#partial switch a in array_action[action_index] {
-				case Cmp: {
-					res = .Cmp
-					entry, ok := &sorce_loc[{a.loc.procedure, a.loc.line}]
-					entry.x -= 1
-					entry.y -= int(a.less)
-					
+			prev_frame :: proc() -> (res: Action_Type) {
+				if action_index == 0 { return .None }
+				action_index -= 1
+				#partial switch a in array_action[action_index] {
+					case Cmp: {
+						res = .Cmp
+						entry, ok := &sorce_loc[{a.loc.procedure, a.loc.line}]
+						entry.x -= 1
+						entry.y -= int(a.less)
+						
+					}
+					case Move: {
+						data_arr[a.from][a.from_index] = data_arr[a.to][a.to_index]
+						data_arr[a.to][a.to_index] = null_data
+						res = .Move
+					}
+					case Swap: {
+						data_arr[a.l][a.li], data_arr[a.r][a.ri] = data_arr[a.r][a.ri], data_arr[a.l][a.li]
+						res = .Swap
+					}
+					case:
 				}
-				case Move: {
-					data_arr[a.from][a.from_index] = data_arr[a.to][a.to_index]
-					data_arr[a.to][a.to_index] = null_data
-					res = .Move
-				}
-				case Swap: {
-					data_arr[a.l][a.li], data_arr[a.r][a.ri] = data_arr[a.r][a.ri], data_arr[a.l][a.li]
-					res = .Swap
-				}
-				case:
+				return
 			}
-			return
-		}
+		// }
 
 		draw_ui: {
 			// if pause {
@@ -400,7 +425,16 @@ ui_update :: proc() {
 				}
 			}
 
-			if rl.GuiDropdownBox({add(&ui_x, 120),20,100,50}, shuffle_names_rl, cast(^c.int)&selected_shuffle, drop_shuffle) {
+			if rl.GuiDropdownBox({next_ui(&ui_x),20,100,50}, merge_names_rl, cast(^c.int)&selected_merge, drop_merge) {
+				drop_merge = !drop_merge
+				if !drop_merge {
+					merge_oop = merge_procs[selected_merge]
+					fmt.println(selected_merge)
+					sort()
+				}
+			}
+
+			if rl.GuiDropdownBox({next_ui(&ui_x),20,100,50}, shuffle_names_rl, cast(^c.int)&selected_shuffle, drop_shuffle) {
 				drop_shuffle = !drop_shuffle
 				if !drop_shuffle { 
 					fmt.println(selected_shuffle)
@@ -408,7 +442,7 @@ ui_update :: proc() {
 				}
 			}
 
-			add(&ui_x, 120)
+			next_ui(&ui_x)
 			if selected_input == .Mod {
 				if rl.GuiTextBox({ui_x,70,100,50}, text=transmute(cstring)(&buf_mod), textSize = 10, editMode = edit_mod) {
 					edit_mod = !edit_mod
@@ -432,7 +466,7 @@ ui_update :: proc() {
 				}
 			}
 
-			add(&ui_x, 120)
+			next_ui(&ui_x)
 			if rl.GuiButton({ui_x,70,50,30},"<") && !is_drop_selected() {
 				pause = true
 				prev_action(selected_action)
@@ -450,7 +484,7 @@ ui_update :: proc() {
 			}
 
 
-			rl.GuiLabel({add(&ui_x, 120),0,50,20},"Size")
+			rl.GuiLabel({next_ui(&ui_x),0,50,20},"Size")
 			if rl.GuiTextBox({ui_x,20,100,50}, text=transmute(cstring)(&buf_input), textSize = 10, editMode = edit_input) {
 				edit_input = !edit_input
 				if !edit_input {
@@ -466,7 +500,7 @@ ui_update :: proc() {
 				}
 			}
 
-			rl.GuiLabel({add(&ui_x, 120),0,100,20},"Speed in sec")
+			rl.GuiLabel({next_ui(&ui_x),0,100,20},"Speed in sec")
 			if rl.GuiTextBox({ui_x,20,100,50}, text=transmute(cstring)(&buf_speed), textSize = 10, editMode = edit_speed) {
 				edit_speed = !edit_speed
 				if !edit_speed {
@@ -485,6 +519,7 @@ ui_update :: proc() {
 			draw_debug("max",max_value)
 			draw_debug("lwngth",len(sort_arr))
 			draw_debug("speed", sort_speed)
+			draw_debug("pitch", pitch)
 			// draw_debug("arr visual",sort_arr[:10])
 			// draw_debug("arr ini",initial_arr[:10])
 			// draw_debug("arr ",arr[:10])
@@ -559,6 +594,9 @@ ui_update :: proc() {
 add :: proc(base: ^$T, adder: T) -> T {
 	base^ += adder
 	return base^
+}
+next_ui :: proc(base: ^$T) -> T {
+	return add(base, 105)
 }
 
 debug_messages : c.int
@@ -641,6 +679,14 @@ input_gen :: proc() {
 			}
 			max_value = mod_input
 		}
+		case .Runs: {
+			max_value = 0
+			for &a, i in arr {
+				val := i % (input_size / 7)
+				a = val
+				max_value = max(max_value, val)
+			}
+		}
 	}
 	shuffle()
 }
@@ -660,6 +706,7 @@ shuffle :: proc() {
 		case .Descending: {
 			slice.reverse_sort(arr)
 		}
+		case .None:
 	}
 	copy(initial_arr, arr)
 	init_data_arr()
@@ -680,6 +727,8 @@ max_len := [Sorts]int{
 	.Insert_bin = 2_000,
 	.Circle = 20_000,
 	.Heap = 100_000,
+	.Poplar = 100_000,
+	.Smooth = 100_000,
 	.Shell = 100_000,
 	.Comb = 100_000,
 	.Quicksort_LL = 100_000,
@@ -692,6 +741,8 @@ max_len := [Sorts]int{
 Sorts :: enum c.int {
 	Network,
 	Min_lomuto,
+	Poplar,
+	Smooth,
 	Stupid,
 	Selection_opt,
 	Selection,
@@ -709,6 +760,37 @@ Sorts :: enum c.int {
 	Quicksort_LL,
 	Quicksort_LR,
 	Pingpong,
+}
+
+Inputs :: enum c.int {
+	Unique,
+	Max_Range,
+	Mod,
+	Runs,
+}
+
+Shuffles :: enum c.int {
+	Random,
+	None,
+	Ascending,
+	Descending,
+}
+
+Merges :: enum c.int {
+	Parity,
+	Cross,
+}
+merge_procs := [Merges]proc(to, from: []int, left, right: int) {
+	.Parity = parity_merge,
+	.Cross = merge_cross,
+}
+
+Medians :: enum c.int {
+
+}
+
+Partitions :: enum c.int {
+
 }
 
 uses_aux := false
@@ -748,6 +830,8 @@ sort :: proc() {
 		case .Bubble: bubble_sort(arr)
 		case .Odd_even: odd_even(arr)
 		case .Heap: heap_sort(arr)
+		case .Poplar: poplar_sort(arr)
+		case .Smooth: smooth_sort(arr)
 		case .Shell: shell_sort(arr)
 		case .Comb: comb_sort(arr)
 		case .Circle: circle_sort(arr)
@@ -799,6 +883,11 @@ random_int :: proc(size: int) -> (res: []int) {
 	return
 }
 
+make_names_enum :: proc($T: typeid, allocator := context.temp_allocator) -> cstring where intrinsics.type_is_enum(T) {
+	enum_names := reflect.enum_field_names(T)
+	enum_names_joined := strings.join(enum_names, sep = ";", allocator = context.temp_allocator)
+	return strings.clone_to_cstring(enum_names_joined)
+}
 
 Arr_Action :: union {
 	Cmp,

@@ -161,4 +161,36 @@ test_sort :: proc(t: ^testing.T){
 		sorted := is_sorted_int(arr)
 		testing.expect(t, sorted, "sort_inlined not sorted")
 	}
+	{
+		arr = random_int(1_000)
+		defer delete(arr)
+
+		poplar_sort(arr)
+		
+		sorted := is_sorted_int(arr)
+		testing.expect(t, sorted, "poplar_sort not sorted")
+	}
+	{
+		arr = random_int(1_000)
+		defer delete(arr)
+
+		smooth_sort(arr)
+		
+		sorted := is_sorted_int(arr)
+		testing.expect(t, sorted, "smooth_sort not sorted")
+	}
+	{
+		swap := make([]int, 20)
+		arr = make([]int, 20)
+		for &a,i in arr {
+			a = i % 10 + i
+		}
+		defer delete(arr)
+		defer delete(swap)
+
+		merge_cross(swap, arr, 10, 10)
+		
+		sorted := is_sorted_int(swap)
+		testing.expect(t, sorted, "merge_cross not sorted")
+	}
 }
