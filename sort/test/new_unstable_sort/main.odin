@@ -16,9 +16,11 @@ Ordering :: enum {
 Generic_Cmp :: #type proc(lhs, rhs: rawptr, user_data: rawptr) -> Ordering
 
 N :: #config(N, 1)
+MOD :: #config(MOD, 1000)
 base : []int
 main :: proc() {
-
+	fmt.println("testing with data size:", size_of(Data(int)),", modulus:",MOD)
+	
 	for i := 10; i <= 1_000_000; i *= 10 {
 		sort_sizes(i, int)
 		// sort_sizes(i, i32)
@@ -41,7 +43,7 @@ sort_sizes :: proc(size: int, $T: typeid) {
 	smooth_cmp: int
 	quick_cmp: int
 	for i in 0..<clamp(iter, 1, 10_000) {
-		ran(arr)
+		modu(arr)
 		start := time.tick_now()
 		comps = 0
 		slice.sort_by(arr, proc(l,r: Data(T))->bool{
@@ -54,11 +56,13 @@ sort_sizes :: proc(size: int, $T: typeid) {
 		if !slice.is_sorted_by(arr, proc(l,r: Data(T))->bool{
 			return l.rand < r.rand
 		}) {
-			fmt.println(arr)
-			panic("not sorted")
+			fmt.println(typeid_of(T), size)
+			panic("not sorted, quick")
 		}
 
-		ran(arr)
+
+
+		modu(arr)
 		start = time.tick_now()
 		comps = 0
 		sort_by(arr, proc(l,r: Data(T))->bool{
@@ -80,6 +84,14 @@ sort_sizes :: proc(size: int, $T: typeid) {
 ran :: proc(arr: []Data($T)) {
 	for &a,i in arr {
 		a.rand = cast(T)(len(arr) / 2 - rand.int_max(len(arr)))
+		a.junk[0] = i
+	}
+}
+
+
+modu :: proc(arr: []Data($T)) {
+	for &a,i in arr {
+		a.rand = cast(T)(rand.int_max(len(arr)) % MOD)
 		a.junk[0] = i
 	}
 }
