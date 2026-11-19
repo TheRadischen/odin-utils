@@ -12,8 +12,8 @@ import "core:sort"
 
 
 
-SIZE :: 10_000_000
-ITER :: 2
+SIZE :: 100_000
+ITER :: 10
 
 main :: proc(){
 
@@ -23,6 +23,73 @@ main :: proc(){
 	data_soa := make(#soa[]Data, SIZE)
 	times : [ITER]time.Duration
 	
+
+	{
+		typ :: int
+		arr := make([]typ, SIZE)
+		mint := time.MAX_DURATION
+		for i in 0..< 10 {
+			rand_data(data)
+			// for &a, i in arr {a = (0.5 - typ(rand.float64())) }
+			// for &a, i in arr {a = cast(typ)rand.int63()}
+			start := time.tick_now()
+			radix(data, proc(k: ^Data) -> ^typ {return &k.rand})
+			dur := time.tick_since(start)
+			mint = min(mint,dur)
+			if !slice.is_sorted_by(data, proc(l,r: Data) -> bool {return l.rand < r.rand}) {
+				fmt.println(arr[:10])
+				fmt.println("skill issue")
+			}
+		}
+		fmt.println(mint)
+
+		
+		// return
+	}
+	// {
+	// 	typ :: int
+	// 	arr := make([]typ, SIZE)
+	// 	mint := time.MAX_DURATION
+	// 	for i in 0..< 100 {
+	// 		rand_arr(arr)
+
+	// 		start := time.tick_now()
+	// 		radix(arr, proc(k: ^typ) -> ^typ {return k})
+	// 		dur := time.tick_since(start)
+	// 		mint = min(mint,dur)
+	// 		if !slice.is_sorted(arr) {
+	// 			fmt.println(arr[:10])
+	// 			fmt.println("skill issue")
+	// 		}
+	// 	}
+	// 	fmt.println(mint)
+
+		
+	// 	// return
+	// }
+
+	// {
+	// 	typ :: int
+	// 	arr := make([]typ, SIZE)
+	// 	mint := time.MAX_DURATION
+	// 	for i in 0..< 100 {
+	// 		rand_data_soa(data_soa)
+	// 		// for &a, i in arr {a = (0.5 - typ(rand.float64())) }
+	// 		// for &a, i in arr {a = cast(typ)rand.int63()}
+	// 		start := time.tick_now()
+	// 		radix_integer(data_soa, proc(k: #soa ^#soa[]Data) -> ^typ {return transmute(^int)&k.rand})
+	// 		dur := time.tick_since(start)
+	// 		mint = min(mint,dur)
+	// 		if !slice.is_sorted(arr) {
+	// 			fmt.println(arr[:10])
+	// 			fmt.println("skill issue")
+	// 		}
+	// 	}
+	// 	fmt.println(mint)
+
+		
+	// 	return
+	// }
 	
 	// for i in 0..<ITER {
 	// 	ran(arr)
@@ -138,7 +205,7 @@ main :: proc(){
 	for i in 0..<ITER {
 		ran(arr)
 		start := time.tick_now()
-		radix(arr)
+		radix(arr, proc(k: ^int) -> ^int {return k})
 		times[i] = time.tick_since(start)
 		if !is_sorted(arr) {panic("did not sort")}
 	}
@@ -196,7 +263,7 @@ main :: proc(){
 	
 	for i in 0..<ITER {
 		start := time.tick_now()
-		radix(arr)
+		radix(arr, proc(k: ^int) -> ^int {return k})
 		times[i] = time.tick_since(start)
 		if !is_sorted(arr) {panic("did not sort")}
 	}
@@ -303,7 +370,7 @@ main :: proc(){
 	for i in 0..<ITER {
 		ran(data)
 		start := time.tick_now()
-		radix(data, proc(d: Data) -> int {return d.rand})
+		radix(data, proc(d: ^Data) -> ^int {return &d.rand})
 		times[i] = time.tick_since(start)
 		if !is_sorted(data) {panic("did not sort")}
 	}

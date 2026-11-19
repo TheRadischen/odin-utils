@@ -188,7 +188,7 @@ test_sort :: proc(t: ^testing.T){
 		defer delete(arr)
 		defer delete(swap)
 
-		merge_cross(swap, arr, 10, 10)
+		merge_cross_left(swap, arr, 10, 10)
 		
 		sorted := is_sorted_int(swap)
 		testing.expect(t, sorted, "merge_cross not sorted")

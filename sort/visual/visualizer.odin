@@ -1,5 +1,6 @@
 package sorting
 
+import "core:math"
 import "base:intrinsics"
 import "base:runtime"
 import "core:math/rand"
@@ -46,6 +47,9 @@ sort_time : f64 = 6
 sort_speed : f64 = 6
 sorting_counter :f64= 0
 
+max_gen_value :: 200
+gen_value := 10
+gen_value2 := 10
 
 
 
@@ -101,16 +105,11 @@ main :: proc() {
 	{
 		// swap := make([]int, 20)
 		// arr = make([]int, 20)
-		// for &a,i in arr {
-		// 	a = i % 10 + 0
-		// }
-		// defer delete(arr)
-		// defer delete(swap)
-
-		// merge_cross(swap, arr, 10, 10)
-		
-		// sorted := is_sorted_int(swap)
-		// fmt.println(sorted, arr, swap)
+		arr = random_int(32*1)
+		// for &a,i in arr {a = i}
+		aux = make([]int, MAX_SIZE)
+		radix_lsd(arr, aux)
+		// fmt.println(arr)
 		// return
 	}
 	rl.SetConfigFlags({.WINDOW_RESIZABLE, .VSYNC_HINT})
@@ -119,31 +118,17 @@ main :: proc() {
 	rl.SetTargetFPS(target_fps)
 	rl.GuiSetStyle(.DEFAULT, 16, 15) // fontsize
 
-	rl.InitAudioDevice()
-	defer rl.CloseAudioDevice()
+	// rl.InitAudioDevice()
+	// defer rl.CloseAudioDevice()
 
 	
-	music := rl.LoadMusicStream("sweden.xm");
-	rl.PlayMusicStream(music);
+	// music := rl.LoadMusicStream("sweden.xm");
+	// rl.PlayMusicStream(music);
 
 	target_ui = rl.LoadRenderTexture(INIT_WIDTH, INIT_HEIGHT)
 	target_arr = rl.LoadRenderTexture(INIT_WIDTH, INIT_HEIGHT - 200)
 
-	// sort_names := reflect.enum_field_names(Sorts)
-	// sort_names_joined := strings.join(sort_names, sep = ";", allocator = context.temp_allocator)
-	// sort_names_rl = strings.clone_to_cstring(sort_names_joined)
 
-	// shuffle_names := reflect.enum_field_names(Shuffles)
-	// shuffle_names_joined := strings.join(shuffle_names, sep = ";", allocator = context.temp_allocator)
-	// shuffle_names_rl = strings.clone_to_cstring(shuffle_names_joined)
-
-	// input_names := reflect.enum_field_names(Inputs)
-	// input_names_joined := strings.join(input_names, sep = ";", allocator = context.temp_allocator)
-	// input_names_rl = strings.clone_to_cstring(input_names_joined)
-
-	// action_names := reflect.enum_field_names(Action_Type)
-	// action_names_joined := strings.join(action_names, sep = ";", allocator = context.temp_allocator)
-	// action_names_rl = strings.clone_to_cstring(action_names_joined)
 	sort_names_rl = make_names_enum(Sorts)
 	shuffle_names_rl = make_names_enum(Shuffles)
 	input_names_rl = make_names_enum(Inputs)
@@ -180,6 +165,13 @@ main :: proc() {
 pitch : f32 = 1
 
 draw_arr :: proc(){
+	pixel_size: i32
+	switch input_size {
+		case 0..<100: pixel_size = 10
+		case 100..<1000: pixel_size = 6
+		case 1000..<10000: pixel_size = 3
+		case: pixel_size = 1
+	}
 	rl.BeginTextureMode(target_arr)
 		rl.ClearBackground(rl.BLACK)
 		dist := INIT_WIDTH / f64(len(sort_arr))
@@ -196,7 +188,7 @@ draw_arr :: proc(){
 				} else {
 					color = rl.ColorLerp(rl.WHITE, rl.RED, 1- f32(time_diff) / (10 * cast(f32)sort_speed))
 				}
-				rl.DrawRectangle(i32(x),i32(y),5,5,color)
+				rl.DrawRectangle(i32(x),i32(y),pixel_size,pixel_size,color)
 			}
 		} else {
 			for a, i in sort_arr {
@@ -210,7 +202,7 @@ draw_arr :: proc(){
 				} else {
 					color = rl.ColorLerp(rl.WHITE, rl.RED, 1- f32(time_diff) / (10 * cast(f32)sort_speed))
 				}
-				rl.DrawRectangle(i32(x),i32(y),5,5,color)
+				rl.DrawRectangle(i32(x),i32(y),pixel_size,pixel_size,color)
 			}
 			x = 0
 			for a, i in swap_arr {
@@ -224,7 +216,7 @@ draw_arr :: proc(){
 				} else {
 					color = rl.ColorLerp(rl.WHITE, rl.RED, 1- f32(time_diff) / (10 * cast(f32)sort_speed))
 				}
-				rl.DrawRectangle(i32(x),i32(y),5,5,color)
+				rl.DrawRectangle(i32(x),i32(y),pixel_size,pixel_size,color)
 			}
 		}
 
@@ -392,11 +384,14 @@ ui_update :: proc() {
 
 			
 			draw_text(10, 70, "action: ", action_index)
-			draw_text(10, 95, "comps: ", comps, " / n log n ", f64(comps) / f64(input_size * log2(input_size)))
-			draw_text(10, 120, "moves: ", moves, " / n log n ", f64(moves) / f64(input_size * log2(input_size)))
+			s := f64(input_size)
+			lg := math.log2(s)
+			base := lg * s - s
+			draw_text(10, 95, "comps: ", comps, " / n log n - n", f64(comps) / base)
+			draw_text(10, 120, "moves: ", moves, " / n log n - n", f64(moves) / base)
 
-			slider_rec := rl.Rectangle{0,150,1600,50}
-			slider_rec2 := rl.Rectangle{2,152,1596,46}
+			slider_rec :: rl.Rectangle{0,150,1600,50}
+			slider_rec2 :: rl.Rectangle{2,152,1596,46}
 			rl.DrawRectangleRec(slider_rec, rl.GREEN)
 			rl.DrawRectangleRec(slider_rec2, rl.BLACK)
 			if mpos := rl.GetMousePosition(); rl.CheckCollisionPointRec(mpos, slider_rec2) && !is_drop_selected()  {
@@ -414,10 +409,53 @@ ui_update :: proc() {
 				}
 			}
 			action_x := c.int(action_index * 1600 / len(array_action))
-			rl.DrawLine(action_x,152,action_x,198,rl.RED)
+			rl.DrawLine(action_x,152,action_x,198,rl.RED)			
+			
+			gen_value_outer :: rl.Rectangle{1400,100,1600,50}
+			gen_value_inner :: rl.Rectangle{1402,102,1596,46}
+			rl.DrawRectangleRec(gen_value_outer, rl.GREEN)
+			rl.DrawRectangleRec(gen_value_inner, rl.BLACK)
+			if mpos := rl.GetMousePosition(); rl.CheckCollisionPointRec(mpos, gen_value_inner) {
+				rl.DrawRectangleRec(gen_value_inner, rl.DARKGRAY)
+				mx := i32(mpos.x)
+				rl.DrawLine(mx,102,mx,148,rl.RED)
+
+				goal := int(((mpos.x - 1400) / 200) * max_gen_value)
+				draw_text(clamp(mx,10,1550), 70, goal)
+					// draw_debug("index",action_index)
+				if rl.IsMouseButtonDown(.LEFT) {
+					gen_value2 = goal
+					draw_debug("gen_value", gen_value2)
+					sort()
+				}
+			}		
+
+			draw_debug("bin_insert: " , gen_value2)
+			draw_debug("merge_insertion: " , gen_value)
+			
+			gen_value_outer2 :: rl.Rectangle{1400,50,1600,50}
+			gen_value_inner2 :: rl.Rectangle{1402,52,1596,46}
+			rl.DrawRectangleRec(gen_value_outer2, rl.GREEN)
+			rl.DrawRectangleRec(gen_value_inner2, rl.BLACK)
+			if mpos := rl.GetMousePosition(); rl.CheckCollisionPointRec(mpos, gen_value_inner2) {
+				rl.DrawRectangleRec(gen_value_inner2, rl.DARKGRAY)
+				mx := i32(mpos.x)
+				rl.DrawLine(mx,52,mx,98,rl.RED)
+
+				goal := int(((mpos.x - 1400) / 200) * max_gen_value)
+				draw_text(clamp(mx,10,1550), 70, goal)
+					// draw_debug("index",action_index)
+				if rl.IsMouseButtonPressed(.LEFT) {
+					gen_value = goal
+					draw_debug("gen_value", gen_value)
+					sort()
+				}
+			}
+			// action_x := c.int(action_index * 1600 / len(array_action))
+			// rl.DrawLine(action_x,152,action_x,198,rl.RED)
 
 
-			if rl.GuiDropdownBox({ui_x,20,100,50}, sort_names_rl, cast(^c.int)&selected_sort, drop_sort) {
+			if rl.GuiDropdownBox({ui_x,20,100,50}, sort_names_rl, cast(^c.int)&selected_sort, drop_sort) != 0 {
 				drop_sort = !drop_sort
 				if !drop_sort {
 					fmt.println(selected_sort)
@@ -425,7 +463,7 @@ ui_update :: proc() {
 				}
 			}
 
-			if rl.GuiDropdownBox({next_ui(&ui_x),20,100,50}, merge_names_rl, cast(^c.int)&selected_merge, drop_merge) {
+			if rl.GuiDropdownBox({next_ui(&ui_x),20,100,50}, merge_names_rl, cast(^c.int)&selected_merge, drop_merge) != 0 {
 				drop_merge = !drop_merge
 				if !drop_merge {
 					merge_oop = merge_procs[selected_merge]
@@ -434,7 +472,7 @@ ui_update :: proc() {
 				}
 			}
 
-			if rl.GuiDropdownBox({next_ui(&ui_x),20,100,50}, shuffle_names_rl, cast(^c.int)&selected_shuffle, drop_shuffle) {
+			if rl.GuiDropdownBox({next_ui(&ui_x),20,100,50}, shuffle_names_rl, cast(^c.int)&selected_shuffle, drop_shuffle) != 0 {
 				drop_shuffle = !drop_shuffle
 				if !drop_shuffle { 
 					fmt.println(selected_shuffle)
@@ -458,7 +496,7 @@ ui_update :: proc() {
 				}
 			}
 			
-			if rl.GuiDropdownBox({ui_x,20,100,50}, input_names_rl, cast(^c.int)&selected_input, drop_input) {
+			if rl.GuiDropdownBox({ui_x,20,100,50}, input_names_rl, cast(^c.int)&selected_input, drop_input) != 0 {
 				drop_input = !drop_input
 				if !drop_input { 
 					fmt.println(selected_input)
@@ -475,7 +513,7 @@ ui_update :: proc() {
 				pause = true
 				next_action(selected_action)
 			}
-			if rl.GuiDropdownBox({ui_x,20,100,50}, action_names_rl, cast(^c.int)&selected_action, drop_action) {
+			if rl.GuiDropdownBox({ui_x,20,100,50}, action_names_rl, cast(^c.int)&selected_action, drop_action) != 0 {
 				drop_action = !drop_action
 				if !drop_action { 
 					// selected_action = transmute(Action_Type)(transmute(c.int)selected_action + 1)
@@ -517,7 +555,7 @@ ui_update :: proc() {
 			draw_debug("size: ", input_size)
 			draw_debug("mod: ", mod_input)
 			draw_debug("max",max_value)
-			draw_debug("lwngth",len(sort_arr))
+			draw_debug("length",len(sort_arr))
 			draw_debug("speed", sort_speed)
 			draw_debug("pitch", pitch)
 			// draw_debug("arr visual",sort_arr[:10])
@@ -525,7 +563,7 @@ ui_update :: proc() {
 			// draw_debug("arr ",arr[:10])
 
 			for key, value in sorce_loc {
-				draw_debug(key, f64(value.y) / f64(value.x))
+				// draw_debug(key, f64(value.y) / f64(value.x))
 			}
 
 			rl.DrawText("backward" if backward else "forward", 1210, 20, FONT_SIZE, rl.YELLOW if backward else rl.GREEN)
@@ -724,8 +762,11 @@ max_len := [Sorts]int{
 	.Bubble = 1000,
 	.Odd_even = 1000,
 	.Insertion = 1000,
-	.Insert_bin = 2_000,
+	.Insert_bin = 32 * 1024,
+	.Merge_insert = 32 * 1024,
 	.Circle = 20_000,
+	.Natural_merge = 100_000,
+	.Radix_lsd = 100_000,
 	.Heap = 100_000,
 	.Poplar = 100_000,
 	.Smooth = 100_000,
@@ -735,31 +776,38 @@ max_len := [Sorts]int{
 	.Quicksort_LR = 100_000,
 	.Pingpong = 100_000,
 	.Merge_rotate = 100_000,
+	.Merge_rotate_aux = 100_000,
 	.Min_lomuto = 100_000,
+	// .Min_flux = 100_000,
 }
 
 Sorts :: enum c.int {
-	Network,
+	Pingpong,
 	Min_lomuto,
+	// Min_flux,
+	Radix_lsd,
 	Poplar,
 	Smooth,
-	Stupid,
+	Natural_merge,
+	Merge_rotate,
+	Merge_rotate_aux,
+	Merge_insert,
+	Insertion,
+	Insert_bin,
+	Heap,
+	Shell,
+	Comb,
 	Selection_opt,
 	Selection,
 	Selection_double,
 	Cycle,
 	Bubble,
 	Odd_even,
-	Insertion,
-	Insert_bin,
-	Heap,
-	Shell,
-	Merge_rotate,
-	Comb,
+	Network,
+	Stupid,
 	Circle,
 	Quicksort_LL,
 	Quicksort_LR,
-	Pingpong,
 }
 
 Inputs :: enum c.int {
@@ -779,10 +827,14 @@ Shuffles :: enum c.int {
 Merges :: enum c.int {
 	Parity,
 	Cross,
+	Crossr,
+	// Inplace,
 }
 merge_procs := [Merges]proc(to, from: []int, left, right: int) {
 	.Parity = parity_merge,
-	.Cross = merge_cross,
+	.Cross = merge_cross_left,
+	.Crossr = merge_cross_right,
+	// .Inplace = merge_inplace_indecies,
 }
 
 Medians :: enum c.int {
@@ -840,9 +892,23 @@ sort :: proc() {
 		case .Quicksort_LL: quick_sort_ll(arr)
 		case .Quicksort_LR: quick_sort_lr(arr)
 		case .Min_lomuto: sort_inlined(arr)
+		case .Radix_lsd: radix_lsd(arr, aux); uses_aux = true 
+		// case .Min_flux: sort_stable(arr, aux); uses_aux = true
 		case .Pingpong: pipo_sort(arr, aux); uses_aux = true
+		case .Natural_merge: natural_merge(arr, aux); uses_aux = true
 		case .Merge_rotate: merge_rotate(arr)
+		case .Merge_rotate_aux: merge_rotate_buffer(arr, aux);uses_aux = true
+		case .Merge_insert: merge_insertion(arr)
 	}
+
+	for i in 1..<len(arr) {
+		if arr[i-1] > arr[i] {
+			fmt.println(arr[i-1], arr[i])
+		}
+	}
+	// if !slice.is_sorted(arr) {
+	// 	panic("not sorted")
+	// }
 
 	sort_speed = cast(f64)len(array_action) / (sort_time * 60)
 	init_data_arr()

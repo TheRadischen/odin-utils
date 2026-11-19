@@ -12,6 +12,29 @@ temp: int
 
 merge_oop := merge_procs[selected_merge]
 
+/*
+ TODO:
+ sorts:
+	peeksort
+	ping pong powersort
+	bottom up merge
+	quickheap
+		maybe
+	tournament
+	k-way merge
+
+
+ merges: 
+ 	galloping
+
+inputs:
+	runs with many parameters
+	comb 10 (parameter)
+	shell gap
+
+ improvements: 
+ */
+
 stupid_sort :: proc(arr: []int) {
 	for i in 0..<len(arr) {
 		for j in 0..<len(arr) {
@@ -460,10 +483,83 @@ comb_sort :: proc(arr: []int) {
 
 
 
+merge_insertion :: proc(arr: []int) {
+	if len(arr) <= 2 {
+		insertion_sort(arr)
+		return
+	}
+	mid := len(arr) / 2
+	merge_insertion(arr[:mid])
+	merge_insertion(arr[mid:])
+
+	inplace_merge_insertion(arr, mid)
+	// merge_inplace_indecies(arr, mid)
+}
+
+// TODO: this is garbage
+inplace_merge_insertion :: proc(arr: []int, left: int) {
+	right := len(arr) - left
+	l := left - 1
+	r := len(arr) - 1
+
+	for _ in 0..<right {
+		l_start := l
+		for l >= 0 && less(&arr[r], &arr[l]) { l -= 1 }
+		dist := l_start - l
+		rotate(arr[l+1:r+1], dist)
+		r -= dist + 1
+	}
+}
+
+
+merge_inplace_indecies :: proc(arr: []int, left: int) {
+	n := len(arr)
+	indecies := make([]int, n)
+	r := left
+	l := 0
+	w := 0
+
+	for l < left && r < n {
+		if !less(&arr[r], &arr[l]) {
+			indecies[w] = l
+			l += 1
+		} else {
+			indecies[w] = r
+			r += 1
+		}
+		w += 1
+	}
+	for l < left {
+		indecies[w] = l
+		l += 1; w += 1
+	}
+	for r < n {
+		indecies[w] = r
+		r += 1; w += 1
+	}
+	sort_from_permutation_indices(arr, indecies)
+	delete(indecies)
+}
+
+
+merge_rotate_buffer :: proc(arr, aux: []int) {
+	if len(arr) < gen_value {
+		pipo_sort(arr, aux)
+		return
+	}
+		
+	mid := len(arr) / 2
+	merge_rotate_buffer(arr[:mid], aux)
+	merge_rotate_buffer(arr[mid:], aux)
+
+
+	inplace_merge_buf(arr, aux, mid)
+}
 
 merge_rotate :: proc(arr: []int) {
-	if len(arr) < 2 {
-		// insertion_sort(arr)
+	if len(arr) < gen_value {
+		insertion_sort(arr[:min(len(arr),8)])
+		insertion_sort_binary(arr,8)
 		return
 	}
 		
@@ -472,7 +568,8 @@ merge_rotate :: proc(arr: []int) {
 	merge_rotate(arr[mid:])
 
 
-	inplace_merge(arr, mid, len(arr) - mid)
+	// merge_inplace_indecies(arr, mid)
+	inplace_merge(arr, mid)
 }
 
 bin_search_left :: proc(arr: []int, value: ^int) -> (from: int) {
@@ -511,52 +608,62 @@ bin_search_right :: proc(arr: []int, value: ^int) -> (from: int) {
 	return from
 }
 
-inplace_merge :: proc(arr: []int, left, right: int) {
-	if left == 0 || right == 0 {
+inplace_merge :: proc(arr: []int, left: int) {
+	if left == 0 || left == len(arr) {
 		return
 	}
 
-	if left + right == 2 {
-		cond_swap(&arr[1],&arr[0])
+	if len(arr) < gen_value2 {
+		// inplace_merge_insertion(arr, left)
+		merge_inplace_indecies(arr, left)
 		return
 	}
 
-	if !less(&arr[left], &arr[left - 1]) { return }
+	right := len(arr) - left
 
-	first_cut, second_cut: int
-	left2, right2: int
-
-	if left > right {
-		left2 = left / 2
-		first_cut = left2
-
-		second_cut = left + bin_search_left(arr[left:], &arr[first_cut])
-		right2 = second_cut - left
+	left_cut, right_cut: int
+	if left < right {
+		right_cut = right / 2
+		left_cut = bin_search_left(arr[:left], &arr[left + right_cut])
 	} else {
-		right2 = right / 2
-		second_cut = left + right2
-		
-		first_cut = bin_search_right(arr[:left], &arr[second_cut])
-		left2 = first_cut
+		left_cut = left / 2
+		right_cut = bin_search_right(arr[left:], &arr[left_cut])
 	}
 
-	rotate_reverse(arr[first_cut:second_cut], left - first_cut)
-	new_mid := first_cut + right2
+	rotate_left(arr[left_cut:left + right_cut], left - left_cut)
+	// rotate(arr[left_cut:left + right_cut], left - left_cut)
 
-	inplace_merge(arr[:new_mid], left2       , right2        )
-	inplace_merge(arr[new_mid:], left - left2, right - right2)
+	mid := left_cut + right_cut
+	inplace_merge(arr[:mid], left_cut)
+	inplace_merge(arr[mid:], left - left_cut)
 }
-
-rotate_reverse :: proc(arr: []int, left: int) {
-	reverse(arr[left:])
-	reverse(arr[:left])
-	reverse(arr)
-}
-reverse :: proc(arr: []int) {
-	n := len(arr)
-	for i in 0..<n / 2 {
-		swap(&arr[i], &arr[n - i - 1])
+inplace_merge_buf :: proc(arr, aux: []int, left: int) {
+	if left == 0 || left == len(arr) {
+		return
 	}
+
+	right := len(arr) - left
+	if left < gen_value2 || right < gen_value2{
+		merge_cross_swap(arr, aux, left)
+		return
+	}
+
+
+	left_cut, right_cut: int
+	if left < right {
+		right_cut = right / 2
+		left_cut = bin_search_left(arr[:left], &arr[left + right_cut])
+	} else {
+		left_cut = left / 2
+		right_cut = bin_search_right(arr[left:], &arr[left_cut])
+	}
+
+	rotate_left(arr[left_cut:left + right_cut], left - left_cut)
+	// rotate(arr[left_cut:left + right_cut], left - left_cut)
+
+	mid := left_cut + right_cut
+	inplace_merge_buf(arr[:mid], aux, left_cut)
+	inplace_merge_buf(arr[mid:], aux, left - left_cut)
 }
 
 
@@ -613,8 +720,8 @@ circle_sort :: proc(arr: []int) {
 }
 
 
-insertion_sort :: proc(arr: []int) {
-	for i in 1..<len(arr) {
+insertion_sort :: proc(arr: []int, pre_sorted := 1) {
+	for i in pre_sorted..<len(arr) {
 		move(&temp, &arr[i])
 		j := i
 		for j > 0 && less(&temp, &arr[j - 1]) {
@@ -625,8 +732,8 @@ insertion_sort :: proc(arr: []int) {
 	}
 }
 
-insertion_sort_binary :: proc(arr: []int) {
-	for i in 1..<len(arr) {
+insertion_sort_binary :: proc(arr: []int, pre_sorted := 1) {
+	for i in pre_sorted..<len(arr) {
 		dest := bin_search_left(arr[:i], &arr[i])
 		if dest == i { continue }
 		move(&temp, &arr[i])
@@ -636,6 +743,27 @@ insertion_sort_binary :: proc(arr: []int) {
 		move(&arr[dest], &temp)
 	}
 }
+// insertion_sort_binary_right :: proc(arr: []int, pre_sorted := 1) {
+// 	for i := len(arr) - pre_sorted - 1; i > 0; i -= 1 {
+// 		dest := bin_search_right(arr[i+1:], &arr[i])
+// 		if dest == i { continue }
+// 		move(&temp, &arr[i])
+// 		for j := i; j > dest; j -= 1{
+// 			move(&arr[j], &arr[j - 1])
+// 		}
+// 		move(&arr[dest], &temp)
+// 	}
+// 	}
+// 	for i in pre_sorted..<len(arr) {
+// 		dest := bin_search_left(arr[:i], &arr[i])
+// 		if dest == i { continue }
+// 		move(&temp, &arr[i])
+// 		for j := i; j > dest; j -= 1{
+// 			move(&arr[j], &arr[j - 1])
+// 		}
+// 		move(&arr[dest], &temp)
+// 	}
+// }
 
 quick_sort_ll :: proc(arr: []int) {
 	if len(arr) <= 1 { return }
@@ -655,13 +783,13 @@ quick_sort_ll :: proc(arr: []int) {
 	
 }
 
-quick_sort_lr2 :: proc(arr: []int) {
+quick_sort_lr :: proc(arr: []int) {
 	if len(arr) <= 1 { return }
 
 	temp = arr[len(arr) / 2]
 	left := 0
 	right := len(arr) - 1
-	
+
 	for {
 		for less(&arr[left], &temp) { left += 1 }
 		for less(&temp, &arr[right]) { right -= 1 }
@@ -670,29 +798,29 @@ quick_sort_lr2 :: proc(arr: []int) {
 		left += 1; right -= 1
 	}
 
-	quick_sort_lr2(arr[:left])
-	quick_sort_lr2(arr[left:])
-}
-quick_sort_lr :: proc(arr: []int) {
-	if len(arr) <= 1 { return }
-
-	p_index := len(arr) / 2
-	left := 1
-	right := len(arr) - 1
-	
-	swap(&arr[0], &arr[p_index])
-	for {
-		for left < right && less(&arr[left], &temp) { left += 1 }
-		for left < right && less(&temp, &arr[right]) { right -= 1 }
-		if left >= right { break }
-		swap(&arr[left], &arr[right])
-		left += 1; right -= 1
-	}
-	swap(&arr[0], &arr[left-1])
-
-	quick_sort_lr(arr[:left-1])
+	quick_sort_lr(arr[:left])
 	quick_sort_lr(arr[left:])
 }
+// quick_sort_lr :: proc(arr: []int) {
+// 	if len(arr) <= 1 { return }
+
+// 	p_index := len(arr) / 2
+// 	left := 1
+// 	right := len(arr) - 1
+	
+// 	swap(&arr[0], &arr[p_index])
+// 	for {
+// 		for left < right && less(&arr[left], &temp) { left += 1 }
+// 		for left < right && less(&temp, &arr[right]) { right -= 1 }
+// 		if left >= right { break }
+// 		swap(&arr[left], &arr[right])
+// 		left += 1; right -= 1
+// 	}
+// 	swap(&arr[0], &arr[left-1])
+
+// 	quick_sort_lr(arr[:left-1])
+// 	quick_sort_lr(arr[left:])
+// }
 
 networks :: proc(arr: []int) {
 	assert(len(arr) <= 32)
@@ -808,7 +936,7 @@ dec :: proc(ptr: ^int) -> int {
 
 
 
-merge_cross :: proc(to, from: []int, left, right: int) {
+merge_cross_left :: proc(to, from: []int, left, right: int) {
 	l := 0
 	r := left
 	i := 0
@@ -853,10 +981,232 @@ merge_cross :: proc(to, from: []int, left, right: int) {
 }
 
 
+merge_cross_right :: proc(to, from: []int, left, right: int) {
+	l := left - 1
+	r := left + right - 1
+	i := r
+
+	for l > 0 && r > left {
+		if less(&from[r], &from[l - 1]) {
+			move(&to[dec(&i)], &from[dec(&l)])
+			move(&to[dec(&i)], &from[dec(&l)])
+		} else if !less(&from[r - 1], &from[l]) {
+			move(&to[dec(&i)], &from[dec(&r)])
+			move(&to[dec(&i)], &from[dec(&r)])
+		} else {
+			if !less(&from[r], &from[l]) {
+				move(&to[dec(&i)], &from[dec(&r)])
+				move(&to[dec(&i)], &from[dec(&l)])
+			} else {
+				move(&to[dec(&i)], &from[dec(&l)])
+				move(&to[dec(&i)], &from[dec(&r)])
+			}
+			if !less(&from[r], &from[l]) {
+				move(&to[dec(&i)], &from[dec(&r)])
+			} else {
+				move(&to[dec(&i)], &from[dec(&l)])
+			}
+		}
+	}
+	for l >= 0 && r >= left {			
+		if !less(&from[r], &from[l]) {
+			move(&to[dec(&i)], &from[dec(&r)])
+		} else {
+			move(&to[dec(&i)], &from[dec(&l)])
+		}
+	}
+
+
+	for l >= 0 {
+		move(&to[dec(&i)], &from[dec(&l)])
+	} 
+	for r >= left {
+		move(&to[dec(&i)], &from[dec(&r)])
+	}
+}
+
+merge_cross_swap :: proc(arr, swap: []int, left: int) {
+	if left == 0 || left == len(arr) { return }
+	right := len(arr) - left
+
+	if left < right  {
+		block_move(swap, arr[:left])
+		l := 0
+		r := left
+		i := 0
+
+		for l + 1 < left && r + 1 < left + right {
+			if !less(&arr[r], &swap[l + 1]) {
+				move(&arr[inc(&i)], &swap[inc(&l)])
+				move(&arr[inc(&i)], &swap[inc(&l)])
+			} else if less(&arr[r + 1], &swap[l]) {
+				move(&arr[inc(&i)], &arr[inc(&r)])
+				move(&arr[inc(&i)], &arr[inc(&r)])
+			} else {
+				if !less(&arr[r], &swap[l]) {
+					move(&arr[inc(&i)], &swap[inc(&l)])
+					move(&arr[inc(&i)], &arr[inc(&r)])
+				} else {
+					move(&arr[inc(&i)], &arr[inc(&r)])
+					move(&arr[inc(&i)], &swap[inc(&l)])
+				}
+				if !less(&arr[r], &swap[l]) {
+					move(&arr[inc(&i)], &swap[inc(&l)])
+				} else {
+					move(&arr[inc(&i)], &arr[inc(&r)])
+				}
+			}
+		}
+		for l < left && r < right + left {			
+			if !less(&arr[r], &swap[l]) {
+				move(&arr[inc(&i)], &swap[inc(&l)])
+			} else {
+				move(&arr[inc(&i)], &arr[inc(&r)])
+			}
+		}
+
+		for l < left {
+			move(&arr[inc(&i)], &swap[inc(&l)])
+		} 
+
+	} else {
+		block_move(swap, arr[left:])
+		l := left - 1
+		r := right - 1
+		i := len(arr) - 1
+
+		for l > 0 && r > 0 {
+			if less(&swap[r], &arr[l - 1]) {
+				move(&arr[dec(&i)], &arr[dec(&l)])
+				move(&arr[dec(&i)], &arr[dec(&l)])
+			} else if !less(&swap[r - 1], &arr[l]) {
+				move(&arr[dec(&i)], &swap[dec(&r)])
+				move(&arr[dec(&i)], &swap[dec(&r)])
+			} else {
+				if !less(&swap[r], &arr[l]) {
+					move(&arr[dec(&i)], &swap[dec(&r)])
+					move(&arr[dec(&i)], &arr[dec(&l)])
+				} else {
+					move(&arr[dec(&i)], &arr[dec(&l)])
+					move(&arr[dec(&i)], &swap[dec(&r)])
+				}
+				if !less(&swap[r], &arr[l]) {
+					move(&arr[dec(&i)], &swap[dec(&r)])
+				} else {
+					move(&arr[dec(&i)], &arr[dec(&l)])
+				}
+			}
+		}
+		for l >= 0 && r >= 0 {			
+			if !less(&swap[r], &arr[l]) {
+				move(&arr[dec(&i)], &swap[dec(&r)])
+			} else {
+				move(&arr[dec(&i)], &arr[dec(&l)])
+			}
+		}
+
+		for r >= 0 {
+			move(&arr[dec(&i)], &swap[dec(&r)])
+		}
+
+	}
+	
+}
+
+
+// this isnt a full radix implementation, i assumes positiv integer are used
+radix_lsd_reverse :: proc(data, aux: []int) {
+	BASE :: 256
+
+	arr := data
+	swap := aux[:len(data)]
+	SIZE :: size_of(int)
+	counts : [SIZE][BASE]i32
+
+	for &a in arr {
+		k := key(&a)
+		#unroll for c in uint(0)..<SIZE {
+			ind := 0xff & (k >> (c * 8))
+			counts[c][ind] += 1
+		}
+	}
+
+	// calc offset
+	for i in 1..<BASE {
+		#unroll for c in 0..<SIZE {
+			counts[c][i] += counts[c][i - 1]
+		}
+	}
+	// fmt.println(counts)
+	for &count, i in counts {
+		if count[0] == i32(len(arr)) {
+			continue
+		}
+		// fmt.println(data)
+		#reverse for &a in arr {
+			ind := 0xff & (key(&a) >> (uint(i) * 8))
+			count[ind] -= 1
+			// swap[count[ind]] = a
+			move(&swap[count[ind]], &a)
+		}
+		swap, arr = arr, swap
+	}
+	if raw_data(arr) != raw_data(data) {
+		copy(swap, arr)
+		swap, arr = arr, swap
+	}
+}
+
+// this isnt a full radix implementation, it assumes positiv integer are used
+radix_lsd :: proc(data, aux: []int) {
+	BASE :: 256
+
+	arr := data
+	swap := aux[:len(data)]
+	SIZE :: size_of(int)
+	counts : [SIZE][BASE+1]i32
+
+	for &a in arr {
+		k := key(&a)
+		#unroll for c in uint(0)..<SIZE {
+			ind := 0xff & (k >> (c * 8))
+			counts[c][ind+1] += 1
+		}
+	}
+
+	for i in 1..<BASE {
+		#unroll for c in 0..<SIZE {
+			counts[c][i] += counts[c][i - 1]
+		}
+	}
+	
+	for &count, i in counts {
+		if count[1] == i32(len(arr)) {
+			continue
+		}
+		
+		for &a in arr {
+			ind := 0xff & (key(&a) >> (uint(i) * 8))
+			move(&swap[count[ind]], &a)
+			count[ind] += 1
+		}
+		swap, arr = arr, swap
+	}
+	if raw_data(arr) != raw_data(data) {
+		copy(arr, swap)
+		swap, arr = arr, swap
+	}
+}
 
 
 
 
+my_copy :: proc(to, from: []int) {
+	m := min(len(to), len(from))
+	for i in 0..<m {
+		move(&to[i], &from[i])
+	}
+}
 
 cond_swap :: proc(left, right: ^int, loc := #caller_location) -> bool {
 	res := left^ < right^
@@ -878,13 +1228,15 @@ cond_swap :: proc(left, right: ^int, loc := #caller_location) -> bool {
 	}
 	return res
 }
-
+MAX_ACTIONS :: 10_000_000
 move :: proc(left, right: ^int, loc := #caller_location) {
 	when !TEST {
 		moves += 1
-		append(&array_action, Move {
-			location(left), location(right)
-		})
+		if len(array_action) < MAX_ACTIONS {
+			append(&array_action, Move {
+				location(left), location(right)
+			})
+		}
 	}
 	left^ = right^
 }
@@ -892,9 +1244,12 @@ move :: proc(left, right: ^int, loc := #caller_location) {
 swap :: proc(left, right: ^int, loc := #caller_location) {
 	when !TEST {
 		moves += 3
-		append(&array_action, Swap{
-			location(left), location(right)
-		})
+		if len(array_action) < MAX_ACTIONS {
+			append(&array_action, Swap{
+				location(left), location(right)
+			})
+		}
+
 	}
 	left^, right^ = right^, left^	
 }
@@ -903,12 +1258,27 @@ less :: proc(left, right: ^int, loc := #caller_location) -> (res: bool) {
 
 	when !TEST {
 		comps += 1
-		append(&array_action, Cmp{
-			location(left), location(right), res, loc
-		})
+		if len(array_action) < MAX_ACTIONS {
+			append(&array_action, Cmp{
+				location(left), location(right), res, loc
+			})
+		}
 	}
 
 	return res
+}
+
+key :: proc(k: ^int, loc := #caller_location) -> int {
+	when !TEST {
+		comps += 1
+		if len(array_action) < MAX_ACTIONS {
+			append(&array_action, Cmp{
+				location(k), location(k), true, loc
+			})
+		}
+	}
+
+	return k^
 }
 
 location :: proc(n: ^int) -> (type: Arr_Type, ind: int) {
@@ -928,4 +1298,88 @@ location :: proc(n: ^int) -> (type: Arr_Type, ind: int) {
 	return .Swap, diff
 }
 
+
+block_move :: proc(to, from: []int) {
+	length := min(len(to), len(from))
+	for i in 0..<length {
+		move(&to[i], &from[i])
+	}
+}
 mark :: proc(int) {}
+
+
+rotate_left :: rotate
+rotate_left2 :: proc(arr: []int, left: int) {
+	if left == 0 || left == len(arr) { return }
+	reverse(arr[left:])
+	reverse(arr[:left])
+	reverse(arr)
+}
+reverse :: proc(arr: []int) {
+	n := len(arr)
+	for i in 0..<n / 2 {
+		swap(&arr[i], &arr[n - i - 1])
+	}
+}
+
+block_swap :: proc(left, right: []int) {
+	for i in 0..<len(left) {
+		swap(&left[i], &right[i])
+	}
+}
+
+rotate :: proc(arr: []int, mid: int) {
+	a := 0
+	b := len(arr)
+	right := b - mid
+	left := mid
+	mid := mid
+
+	for left > 0 && right > 0 {
+		if right < left {
+			block_swap(arr[mid-right:][:right], arr[mid:][:right])
+			left -= right
+			mid -= right
+			b -= right
+		} else {
+			block_swap(arr[a:][:left], arr[mid:][:left])
+			a += left
+			mid += left
+			right -= left
+		}
+	}
+}
+
+
+
+sort_from_permutation_indices :: proc(arr: []int, indices: []int) {
+	if len(indices) <= 1 {
+		return
+	}
+
+	for i in 0..<len(indices) {
+		next_index := indices[i]
+
+		if next_index < 0 {
+			indices[i] *= -1
+			continue
+		}
+		
+		if next_index <= i {
+			continue
+		}
+
+		cur_index := i
+		move(&temp, &arr[cur_index])
+		for next_index != i {
+			indices[cur_index] *= -1
+
+			move(&arr[cur_index], &arr[next_index])
+			
+			cur_index = next_index
+			next_index = indices[cur_index]
+		}
+		move(&arr[cur_index], &temp)
+		indices[i] *= -1
+	}
+}
