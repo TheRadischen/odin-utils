@@ -69,7 +69,27 @@ inplace_merge :: proc(it: Interface, a, mid, b: int) {
 	inplace_merge(arr, a, new_mid)
 	inplace_merge(arr, new_mid, b)
 }
+_bin_insertion_sort :: proc(it: Interface, a, b: int, presorted: int = 1) {
+	for i in a+presorted..<b {
 
+        start := a
+        end := i
+
+		for start < end {
+			mid := int(uint(start + end) / 2)
+
+            if it->less(mid, i) {
+                start = mid + 1
+            } else {
+                end  = mid
+            }
+		}
+
+		for j := i; j > start; j -= 1 {
+			it->swap(j, j-1)
+		}
+	}
+}
 rotate :: proc(it: Interface, a, m, b: int) {
 	i := m - a
 	j := b - m
