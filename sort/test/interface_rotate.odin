@@ -82,8 +82,31 @@ rotate :: proc(it: Interface, a, m, b: int) {
 			i -= j
 		} else {
 			swap_range(it, m-i, m+j-i, i)
-			j -= 1
+			j -= i
 		}
 	}
 	swap_range(it, m-i, m, i)
 }
+
+rotate2 :: proc(it: Interface, a, m, b: int) {
+	l := m - a
+	r := b - m
+    a := a
+    m := m
+    b := b
+
+	for l > 0 && r > 0 {
+		if r < l {
+			swap_range(it, m-r, m, r)
+			b -= r
+            m -= r
+            l -= r
+		} else {
+			swap_range(it, a, m, l)
+			a += l
+            m += l
+            r -= l
+		}
+	}
+}
+
