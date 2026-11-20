@@ -20,13 +20,13 @@ main :: proc() {
 	arr := make([]int, 100_000)
 	for &a,j in arr {a = j}		
 	it := sort.slice_interface(&arr)
-	sort.sort_stable(it)
+	sort.stable_sort(it)
 	assert(slice.is_sorted(arr))
 	for &a,j in arr {a = 100_000 - j}		
-	sort.sort_stable(it)
+	sort.stable_sort(it)
 	assert(slice.is_sorted(arr))
 	for &a,j in arr {a = 0}		
-	sort.sort_stable(it)
+	sort.stable_sort(it)
 	assert(slice.is_sorted(arr))
 }
 
@@ -52,7 +52,7 @@ sort_sizes :: proc(size: int, $T: typeid) {
 
 		it := sort.slice_interface(&arr)
 
-		sort.sort_stable(it)
+		sort.stable_sort(it)
 
 		dur := time.tick_since(start)
 		min_time = min(min_time, dur)
@@ -116,8 +116,7 @@ stability :: proc(size: int, $T: typeid) {
 				s[i], s[j] = s[j], s[i]
 			},
 		}
-
-		sort.sort_stable(it)
+		sort.stable_sort(it)
 
 
 		dur := time.tick_since(start)
