@@ -10,6 +10,26 @@ merge_rotate :: proc(it: Interface, a, b: int) {
 
 	inplace_merge(arr, a, mid, b)
 }
+
+inplace_merge_insertion :: proc(arr: []int, left: int) {
+    n := len(arr)
+	right := n - left
+    l := 0
+    r := left
+
+	for l < left && right < n {
+        if !less(&arr[r], &arr[l]) {
+            l += 1
+            continue
+        } else {
+            for s := r; s > l; s -= 1 {
+                swap(&arr[s], &arr[s-1])
+            }
+            r += 1
+        }
+	}
+}
+
 inplace_merge :: proc(it: Interface, a, mid, b: int) {
     left := mid - a
     right := b - mid
@@ -21,6 +41,10 @@ inplace_merge :: proc(it: Interface, a, mid, b: int) {
 		if it->less(right, left) {
             if->swap(right, left)
         }
+		return
+	}
+	if left + right < 20 {
+		inplace_merge_insertion(it, a, m, b)
 		return
 	}
 
