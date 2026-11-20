@@ -21,7 +21,7 @@ natural_merge :: proc(arr, buf: []int) {
 	read := length
 	looping := true if len(arr[read:]) >= 32 else false
 	for read + 32 <= n {
-		length := bulk(arr[read:], buf)
+		length := bulk(arr[read:], buf[read:])
 
 		power := merge_power(last(runs[:]).start, read, read + length, scale)
 
@@ -71,7 +71,7 @@ natural_merge2 :: proc(arr, buf: []int) {
 	looping := true if len(arr[read:]) >= 32 else false
 
 	for looping {
-		length := bulk(arr[read:], buf)
+		length := bulk(arr[read:], buf[read:])
 		if n - read - length < 32 {
 			insertion_sort_binary(arr[read:],length)
 			length = len(arr[read:])
@@ -173,18 +173,14 @@ bulk :: proc(base, buf: []int) -> (length: int) {
 				for i in 32..<len(base) {
 					if less(&base[i], &base[i-1]) {
 						length = i
-	assert(is_sorted_int(base[:length]))
 						break outer
 					}
 				}
 				length = len(base)
-	assert(is_sorted_int(base[:length]))
 			} else {
 				parity_merge(buf, base, 8, 8)
 				parity_merge(buf[16:], base[16:], 8, 8)
 				parity_merge(base, buf, 16, 16)
-	assert(length == 32)
-	assert(is_sorted_int(base[:length]))
 			}
 			
 		case .Decending:
@@ -196,13 +192,11 @@ bulk :: proc(base, buf: []int) -> (length: int) {
 					if !less(&base[i], &base[i-1]) {
 						length = i
 						reverse(base[:length])
-	assert(is_sorted_int(base[:length]))
 						break outer
 					}
 				}
 				reverse(base)
 				length = len(base)
-	assert(is_sorted_int(base[:length]))
 			} else {
 				reverse(base[0:8])
 				reverse(base[8:16])
@@ -211,8 +205,6 @@ bulk :: proc(base, buf: []int) -> (length: int) {
 				parity_merge(buf, base, 8, 8)
 				parity_merge(buf[16:], base[16:], 8, 8)
 				parity_merge(base, buf, 16, 16)
-	assert(length == 32)
-	assert(is_sorted_int(base[:length]))
 			}
 		case:
 			if states[0] | states[1] | states[2] | states[3] == .Decending {
@@ -223,52 +215,12 @@ bulk :: proc(base, buf: []int) -> (length: int) {
 				}
 			}
 
-
 			parity_merge(buf[:16], base[:16], 8, 8)
-				// fmt.println(base[:16])
 			parity_merge(buf[16:][:16], base[16:][:16], 8, 8)
-				// fmt.println(base[16:32])
 			parity_merge(base[:32], buf[:32], 16, 16)
-	assert(length == 32)
-	if !is_sorted_int(base[:length]) {
-		fmt.println(base[:length])
-	}
-	}
-
-	assert(is_sorted_int(base[:length]))
-	return length
-}
-
-bulk_any :: proc(base, buf: []int, n: int) -> (length: int) {
-	assert(8 <= n && n < 16)
-
-	h1 := n / 2 
-	q1 := h1 / 2
-	q2 := h1 - q1
-
-	h2 := n - h1
-	q3 := h2 / 2
-	q4 := h2 - q3
-	quarts := [?]int{q1,q2,q3,q4}
-
-	for q in quarts {
-		switch q {
-			case 2:
-			case 3:
-			case 4:
 		}
-	}
 
-	
-	/*
-	32 : 8x4
-	36 : 9x4 ?
-	40 : 10x4 ?
-	...
-	60 : 15x4 ?
-	*/
-
-	return
+	return length
 }
 
 
@@ -314,9 +266,67 @@ merge_top_pp :: proc(arr, buf: []int, runs: ^[dynamic]PP_Run) {
 	assert(len(arr) >= 2)
 	r2 := pop_dynamic_array(runs)
 	r1 := last(runs^[:])
-	merge_cross_swap(arr[r1.start:][:r1.length + r2.length], buf, r1.length)
+	if r2.in_main == r1.in_main {
+		to,f1,f2 : []int
+		if r1.in_main {
+			to = buf[r1.start:][:r1.length + r2.length]
+			f1 = arr[r1.start:][:r1.length]
+			f2 = arr[r2.start:][:r2.length]
+		} else {
+			to = arr[r1.start:][:r1.length + r2.length]
+			f1 = buf[r1.start:][:r1.length]
+			f2 = buf[r2.start:][:r2.length]
+		}
+		merge_cross_right_erm(to, f1, f2)
+		r1.in_main = !r1.in_main
+
+	} else {
+		if r1.length > r2.length {
+			to := arr if r1.in_main else buf
+			from := buf if r1.in_main else arr
+			dest := to[r1.start:][:r1.length + r2.length]
+			f1 := to[r1.start:][:r1.length]
+			f2 := from[r2.start:][:r2.length]
+			merge_cross_right_erm(dest, f1, f2)
+		} else {
+			to := arr if r2.in_main else buf
+			from := buf if r2.in_main else arr
+			dest := to[r1.start:][:r1.length + r2.length]
+			f1 := from[r1.start:][:r1.length]
+			f2 := to[r2.start:][:r2.length]
+			merge_cross_left_erm(dest, f1, f2)
+			r1.in_main = r2.in_main
+		}
+	}
 	r1.length += r2.length
-	r1.in_main = false
+}
+merge_top_pp_last :: proc(arr, buf: []int, runs: ^[dynamic]PP_Run) {
+	assert(len(arr) >= 2)
+	r2 := runs[1]
+	r1 := runs[0]
+	if r2.in_main == r1.in_main {
+		if r1.in_main {
+			merge_cross_swap(arr, buf, r1.length)
+		} else {
+			to := arr[r1.start:][:r1.length + r2.length]
+			f1 := buf[r1.start:][:r1.length]
+			f2 := buf[r2.start:][:r2.length]
+			merge_cross_right_erm(to, f1, f2)
+		}
+	} else {
+		if r1.in_main {
+			to := arr
+			f1 := arr[r1.start:][:r1.length]
+			f2 := buf[r2.start:][:r2.length]
+			merge_cross_right_erm(to, f1, f2)
+		} else {
+			to := arr
+			f1 := buf[r1.start:][:r1.length]
+			f2 := arr[r2.start:][:r2.length]
+			merge_cross_left_erm(to, f1, f2)
+		}
+	}
+	r1.length += r2.length
 }
 
 ping_pong_power :: proc(arr, buf: []int) {
@@ -335,7 +345,7 @@ ping_pong_power :: proc(arr, buf: []int) {
 
 	read := length
 	for read + 32 <= n {
-		length := bulk(arr[read:], buf)
+		length := bulk(arr[read:], buf[read:])
 		power := merge_power(last(runs[:]).start, read, read + length, scale)
 
 		for power <= last(runs[:]).power {
@@ -353,7 +363,10 @@ ping_pong_power :: proc(arr, buf: []int) {
 	}
 	append(&runs, PP_Run{read, length, power, true})
 
-	for len(runs) >= 2 {
+	for len(runs) > 2 {
 		merge_top_pp(arr, buf, &runs)
+	}
+	if len(runs) == 2 {
+		merge_top_pp_last(arr, buf, &runs)
 	}
 }

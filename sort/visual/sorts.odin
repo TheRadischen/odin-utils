@@ -496,8 +496,27 @@ merge_insertion :: proc(arr: []int) {
 	// merge_inplace_indecies(arr, mid)
 }
 
-// TODO: this is garbage
 inplace_merge_insertion :: proc(arr: []int, left: int) {
+    n := len(arr)
+	right := n - left
+    l := 0
+    r := left
+
+	for l < left && right < n {
+        if !less(&arr[r], &arr[l]) {
+            l += 1
+            continue
+        } else {
+            for s := r; s > l; s -= 1 {
+                swap(&arr[s], &arr[s-1])
+            }
+            r += 1
+        }
+	}
+}
+
+// TODO: this is garbage
+inplace_merge_insertion2 :: proc(arr: []int, left: int) {
 	right := len(arr) - left
 	l := left - 1
 	r := len(arr) - 1
@@ -980,6 +999,98 @@ merge_cross_left :: proc(to, from: []int, left, right: int) {
 	}
 }
 
+merge_cross_left_erm :: proc(to, froml, fromr: []int) {
+	left := len(froml)
+	right := len(fromr)
+	l := 0
+	r := 0
+	i := 0
+
+	for l + 1 < left && r + 1 < right {
+		if !less(&fromr[r], &froml[l + 1]) {
+			move(&to[inc(&i)], &froml[inc(&l)])
+			move(&to[inc(&i)], &froml[inc(&l)])
+		} else if less(&fromr[r + 1], &froml[l]) {
+			move(&to[inc(&i)], &fromr[inc(&r)])
+			move(&to[inc(&i)], &fromr[inc(&r)])
+		} else {
+			if !less(&fromr[r], &froml[l]) {
+				move(&to[inc(&i)], &froml[inc(&l)])
+				move(&to[inc(&i)], &fromr[inc(&r)])
+			} else {
+				move(&to[inc(&i)], &fromr[inc(&r)])
+				move(&to[inc(&i)], &froml[inc(&l)])
+			}
+			if !less(&fromr[r], &froml[l]) {
+				move(&to[inc(&i)], &froml[inc(&l)])
+			} else {
+				move(&to[inc(&i)], &fromr[inc(&r)])
+			}
+		}
+	}
+	for l < left && r < right {			
+		if !less(&fromr[r], &froml[l]) {
+			move(&to[inc(&i)], &froml[inc(&l)])
+		} else {
+			move(&to[inc(&i)], &fromr[inc(&r)])
+		}
+	}
+
+
+	for l < left {
+		move(&to[inc(&i)], &froml[inc(&l)])
+	} 
+	for r < right {
+		move(&to[inc(&i)], &fromr[inc(&r)])
+	}
+}
+
+
+merge_cross_right_erm :: proc(to, froml, fromr: []int) {
+	left := len(froml)
+	right := len(fromr)
+	l := left - 1
+	r := right - 1
+	i := len(to) - 1
+
+	for l > 0 && r > 0 {
+		if less(&fromr[r], &froml[l - 1]) {
+			move(&to[dec(&i)], &froml[dec(&l)])
+			move(&to[dec(&i)], &froml[dec(&l)])
+		} else if !less(&fromr[r - 1], &froml[l]) {
+			move(&to[dec(&i)], &fromr[dec(&r)])
+			move(&to[dec(&i)], &fromr[dec(&r)])
+		} else {
+			if !less(&fromr[r], &froml[l]) {
+				move(&to[dec(&i)], &fromr[dec(&r)])
+				move(&to[dec(&i)], &froml[dec(&l)])
+			} else {
+				move(&to[dec(&i)], &froml[dec(&l)])
+				move(&to[dec(&i)], &fromr[dec(&r)])
+			}
+			if !less(&fromr[r], &froml[l]) {
+				move(&to[dec(&i)], &fromr[dec(&r)])
+			} else {
+				move(&to[dec(&i)], &froml[dec(&l)])
+			}
+		}
+	}
+	for l >= 0 && r >= 0 {			
+		if !less(&fromr[r], &froml[l]) {
+			move(&to[dec(&i)], &fromr[dec(&r)])
+		} else {
+			move(&to[dec(&i)], &froml[dec(&l)])
+		}
+	}
+
+
+	for l >= 0 {
+		move(&to[dec(&i)], &froml[dec(&l)])
+	} 
+	for r >= 0 {
+		move(&to[dec(&i)], &fromr[dec(&r)])
+	}
+}
 
 merge_cross_right :: proc(to, from: []int, left, right: int) {
 	l := left - 1

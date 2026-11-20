@@ -766,6 +766,7 @@ max_len := [Sorts]int{
 	.Merge_insert = 32 * 1024,
 	.Circle = 20_000,
 	.Natural_merge = 100_000,
+	.PP_Natural_merge = 100_000,
 	.Radix_lsd = 100_000,
 	.Heap = 100_000,
 	.Poplar = 100_000,
@@ -789,6 +790,7 @@ Sorts :: enum c.int {
 	Poplar,
 	Smooth,
 	Natural_merge,
+	PP_Natural_merge,
 	Merge_rotate,
 	Merge_rotate_aux,
 	Merge_insert,
@@ -896,6 +898,7 @@ sort :: proc() {
 		// case .Min_flux: sort_stable(arr, aux); uses_aux = true
 		case .Pingpong: pipo_sort(arr, aux); uses_aux = true
 		case .Natural_merge: natural_merge(arr, aux); uses_aux = true
+		case .PP_Natural_merge: ping_pong_power(arr, aux); uses_aux = true
 		case .Merge_rotate: merge_rotate(arr)
 		case .Merge_rotate_aux: merge_rotate_buffer(arr, aux);uses_aux = true
 		case .Merge_insert: merge_insertion(arr)

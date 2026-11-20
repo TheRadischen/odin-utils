@@ -1,50 +1,77 @@
-merge_rotate :: proc(it: Interface, a, b: int) {
-	if b - a < 16 {
+package test
+
+import "core:sort"
+
+Interface :: sort.Interface
+_insertion_sort :: proc(it: Interface, a, b: int) {
+	for i in a+1..<b {
+		for j := i; j > a && it->less(j, j-1); j -= 1 {
+			it->swap(j, j-1)
+		}
+	}
+}
+
+_merge_rotate :: proc(it: Interface, a, b: int) {
+	if b - a < 32 {
 		_insertion_sort(it, a, b)
 		return
 	}
 		
 	mid := int(uint(a + b) / 2)
-	merge_rotate(arr, a, mid)
-	merge_rotate(arr, mid, b)
+	_merge_rotate(it, a, mid)
+	_merge_rotate(it, mid, b)
 
-	inplace_merge(arr, a, mid, b)
+	inplace_merge(it, a, mid, b)
 }
 
-inplace_merge_insertion :: proc(arr: []int, left: int) {
-    n := len(arr)
-	right := n - left
+inplace_merge_insertion :: proc(it: Interface, a, m, b: int) {
+    n := b - a
+	right := b - m
+	left := m - a
     l := 0
     r := left
 
 	for l < left && right < n {
-        if !less(&arr[r], &arr[l]) {
+        if !it->less(r, l) {
             l += 1
             continue
         } else {
             for s := r; s > l; s -= 1 {
-                swap(&arr[s], &arr[s-1])
+				it->swap(s, s-1)
             }
             r += 1
         }
 	}
 }
 
-inplace_merge :: proc(it: Interface, a, mid, b: int) {
+// inplace_merge_insertion2 :: proc(arr: []int, left: int) {
+//     n := len(arr)
+// 	right := n - left
+//     l := 0
+//     r := left
+
+// 	for l < left && right < n {
+//         if !less(&arr[r], &arr[l]) {
+//             l += 1
+//             continue
+//         } else {
+//             for s := r; s > l; s -= 1 {
+//                 swap(&arr[s], &arr[s-1])
+//             }
+//             r += 1
+//         }
+// 	}
+// }
+
+_inplace_merge :: proc(it: Interface, a, mid, b: int) {
     left := mid - a
     right := b - mid
 	if left == 0 || right == 0 {
 		return
 	}
 
-	if left + right == 2 {
-		if it->less(right, left) {
-            if->swap(right, left)
-        }
-		return
-	}
 	if left + right < 20 {
-		inplace_merge_insertion(it, a, m, b)
+		inplace_merge_insertion(it, a, mid, b)
 		return
 	}
 
@@ -82,7 +109,7 @@ inplace_merge :: proc(it: Interface, a, mid, b: int) {
 	}
 
 	// rotate(arr[left_cut:left + right_cut], left - left_cut)
-	rotate(arr, left_cut, mid, right_cut)
+	rotate(it, left_cut, mid, right_cut)
 	// rotate(arr[left_cut:left + right_cut], left - left_cut)
 
 	// new_mid := left_cut + right_cut
@@ -90,8 +117,8 @@ inplace_merge :: proc(it: Interface, a, mid, b: int) {
 	// inplace_merge(arr[mid:], left - left_cut)
 
 	new_mid := left_cut + right_cut - mid
-	inplace_merge(arr, a, new_mid)
-	inplace_merge(arr, new_mid, b)
+	inplace_merge(it, a, left_cut,  new_mid)
+	inplace_merge(it, new_mid, right_cut, b)
 }
 _bin_insertion_sort :: proc(it: Interface, a, b: int, presorted: int = 1) {
 	for i in a+presorted..<b {
@@ -114,6 +141,7 @@ _bin_insertion_sort :: proc(it: Interface, a, b: int, presorted: int = 1) {
 		}
 	}
 }
+swap_range :: sort.swap_range
 rotate :: proc(it: Interface, a, m, b: int) {
 	i := m - a
 	j := b - m
