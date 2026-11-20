@@ -17,6 +17,9 @@ main :: proc() {
 	for i := 10; i <= 1_000_000; i *= 2 {
 		stability(i, f32)
 	}
+	for i := 10; i <= 1_000_000; i *= 2 {
+		test_comps(i, int)
+	}
 	arr := make([]int, 100_000)
 	for &a,j in arr {a = j}		
 	it := sort.slice_interface(&arr)
@@ -137,6 +140,70 @@ stability :: proc(size: int, $T: typeid) {
 
 	}
 	fmt.println("time:",min_time, " stable")
+}
+
+
+test_comps :: proc(size: int, $T: typeid) {
+	arr := make([]Data(T), size)
+	defer delete(arr)
+	iter := 1__000 / size 
+	min_time : time.Duration = time.MAX_DURATION
+	min_time2 : time.Duration = time.MAX_DURATION
+	smooth_cmp: int
+	quick_cmp: int
+	for i in 0..<clamp(iter, 1, 10_000) {
+		// ran(arr)
+		ran(arr)
+		start := time.tick_now()
+		comps = 0
+		it := sort.Interface {
+			collection = rawptr(&arr),
+			len = proc(it: sort.Interface) -> int {
+				s := (^[]Data(T))(it.collection)
+				return len(s^)
+			},
+			less = proc(it: sort.Interface, i, j: int) -> bool {
+				s := (^[]Data(T))(it.collection)
+				comps += 1
+				return s[i].rand < s[j].rand
+			},
+			swap = proc(it: sort.Interface, i, j: int) {
+				s := (^[]Data(T))(it.collection)
+				s[i], s[j] = s[j], s[i]
+			},
+		}
+		sort.stable_sort(it)
+
+
+		dur := time.tick_since(start)
+		min_time = min(min_time, dur)
+		sorted, stabel := is_sorted_stable_data(arr)
+		if !sorted {
+			fmt.println(typeid_of(T), size)
+			panic("not sorted")
+		}		
+		if !stabel {
+			for a in arr {
+				fmt.println(a.rand, a.index)
+			}
+			fmt.println(size)
+			panic("not stable")
+		}
+		fmt.print("size: ", size,"")
+		fmt.print("stable interface comps:", comps,"")
+		c1 := comps
+
+		comps = 0
+		ran(arr)
+
+		slice.sort_by(arr, proc(l,r:Data(int)) -> bool {comps += 1;return l.rand < r.rand})
+
+
+		fmt.print("slice.sort comps:", comps,"",f64(comps) / f64(c1))
+		fmt.println()
+		break
+
+	}
 }
 
 is_sorted_stable_data :: proc(arr: []Data($T)) -> (sorted: bool = true, stable: bool = true) {
